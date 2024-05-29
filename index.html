@@ -21,67 +21,81 @@
 <body>
     <canvas id="goombaCanvas" width="400" height="400"></canvas>
     <script>
-        function drawGoomba(ctx) {
+        function drawGoomba(ctx, x, y, size) {
+            // Scale size
+            const headHeight = size * 2;
+            const bodyHeight = size;
+            const bodyWidth = size * 1.2;
+            const eyeRadius = size * 0.3;
+            const pupilRadius = size * 0.1;
+            const footRadius = size * 0.6;
+            const browWidth = size * 0.6;
+            const browHeight = size * 0.1;
+            const mouthWidth = size * 0.8;
+            const mouthHeight = size * 0.15;
+            const toothWidth = size * 0.1;
+            const toothHeight = mouthHeight;
+
             // Draw the head (a hexagon)
             ctx.fillStyle = "#b5651d";
             ctx.beginPath();
-            ctx.moveTo(200, 50);
-            ctx.lineTo(270, 100);
-            ctx.lineTo(270, 200);
-            ctx.lineTo(200, 250);
-            ctx.lineTo(130, 200);
-            ctx.lineTo(130, 100);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + size * 1.5, y + headHeight / 3);
+            ctx.lineTo(x + size * 1.5, y + headHeight);
+            ctx.lineTo(x, y + headHeight * 1.25);
+            ctx.lineTo(x - size * 1.5, y + headHeight);
+            ctx.lineTo(x - size * 1.5, y + headHeight / 3);
             ctx.closePath();
             ctx.fill();
 
             // Draw the body (a rectangle)
             ctx.fillStyle = "#f1e0c6";
-            ctx.fillRect(155, 250, 90, 80);
+            ctx.fillRect(x - bodyWidth / 2, y + headHeight * 1.25, bodyWidth, bodyHeight);
 
             // Draw the feet (two circles)
             ctx.fillStyle = "#8b4513";
             ctx.beginPath();
-            ctx.arc(180, 350, 40, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.5, y + headHeight * 1.25 + bodyHeight + footRadius, footRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(220, 350, 40, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.5, y + headHeight * 1.25 + bodyHeight + footRadius, footRadius, 0, Math.PI * 2);
             ctx.fill();
 
             // Draw the eyes (two circles and black pupils)
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
-            ctx.arc(170, 130, 30, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(230, 130, 30, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.fillStyle = "#000000";
             ctx.beginPath();
-            ctx.arc(170, 130, 10, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(230, 130, 10, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
             ctx.fill();
 
             // Draw the eyebrows (two rectangles)
             ctx.fillStyle = "#000000";
-            ctx.fillRect(150, 100, 40, 10);
-            ctx.fillRect(210, 100, 40, 10);
+            ctx.fillRect(x - size * 0.8, y + headHeight / 3.5, browWidth, browHeight);
+            ctx.fillRect(x + size * 0.2, y + headHeight / 3.5, browWidth, browHeight);
 
             // Draw the mouth (a rectangle)
             ctx.fillStyle = "#000000";
-            ctx.fillRect(170, 170, 60, 10);
+            ctx.fillRect(x - mouthWidth / 2, y + headHeight * 0.8, mouthWidth, mouthHeight);
             ctx.fillStyle = "#ffffff";
             for (let i = 0; i < 7; i++) {
-                ctx.fillRect(170 + i * 10, 170, 5, 10);
+                ctx.fillRect(x - mouthWidth / 2 + i * toothWidth, y + headHeight * 0.8, toothWidth - 1, toothHeight);
             }
         }
 
         window.onload = function() {
             const canvas = document.getElementById('goombaCanvas');
             const ctx = canvas.getContext('2d');
-            drawGoomba(ctx);
+            drawGoomba(ctx, 200, 100, 30);  // Change the coordinates and size as needed
         }
     </script>
 </body>
