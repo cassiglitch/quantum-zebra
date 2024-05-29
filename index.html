@@ -33,8 +33,6 @@
             const browHeight = size * 0.1;
             const mouthWidth = size * 0.8;
             const mouthHeight = size * 0.15;
-            const toothWidth = size * 0.1;
-            const toothHeight = mouthHeight;
 
             // Draw the head (a hexagon)
             ctx.fillStyle = "#b5651d";
@@ -50,7 +48,7 @@
 
             // Draw the body (a rectangle)
             ctx.fillStyle = "#f1e0c6";
-            ctx.fillRect(x - bodyWidth, y + headHeight * 1 -(headHeight/4) , bodyWidth * 2, bodyHeight * 1.2);
+            ctx.fillRect(x - bodyWidth, y + headHeight * 1 -(headHeight/8) , bodyWidth * 2, bodyHeight * 1.2);
 
             // Draw the feet (two circles)
             ctx.fillStyle = "#8b4513";
@@ -85,10 +83,7 @@
 
             // Draw the mouth (a rectangle)
             ctx.fillStyle = "#000000";
-            ctx.fillRect(x - mouthWidth / 2, y + headHeight * 0.8, mouthWidth, mouthHeight);
-            ctx.fillStyle = "#ffffff";
-            for (let i = 0; i < 7; i++) {
-                ctx.fillRect(x - mouthWidth / 2 + i * toothWidth, y + headHeight * 0.8, toothWidth - 1, toothHeight);
+            ctx.fillRect(x - mouthWidth / 2, y + headHeight * 0.8, mouthWidth, mouthHeight)
             }
         }
 
