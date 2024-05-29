@@ -55,10 +55,10 @@
             // Draw the feet (two circles)
             ctx.fillStyle = "#8b4513";
             ctx.beginPath();
-            ctx.arc(x - size * 1, y + headHeight * 1 + bodyHeight + footRadius, footRadius, 0, Math.PI * 2);
+            ctx.arc(x - size * 1, y + headHeight * 1 + bodyHeight + footRadius - (headHeight/2), footRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(x + size * 1, y + headHeight * 1 + bodyHeight + footRadius, footRadius, 0, Math.PI * 2);
+            ctx.arc(x + size * 1, y + headHeight * 1 + bodyHeight + footRadius  - (headHeight/2), footRadius, 0, Math.PI * 2);
             ctx.fill();
 
             // Draw the eyes (two circles and black pupils)
