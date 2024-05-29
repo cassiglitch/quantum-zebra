@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polygon Goomba</title>
+    <title>Goomba</title>
     <style>
         body {
             display: flex;
@@ -13,110 +13,76 @@
             background-color: #f0f0f0;
             margin: 0;
         }
-        #goombaCanvas {
-            border: 1px solid #000;
+        canvas {
+            border: 1px solid black;
         }
     </style>
 </head>
 <body>
-    <canvas id="goombaCanvas" width="500" height="500"></canvas>
-
+    <canvas id="goombaCanvas" width="400" height="400"></canvas>
     <script>
-        function drawPolygon(context, points, fillStyle, strokeStyle) {
-            context.beginPath();
-            context.moveTo(points[0][0], points[0][1]);
-            for (let i = 1; i < points.length; i++) {
-                context.lineTo(points[i][0], points[i][1]);
-            }
-            context.closePath();
-            if (fillStyle) {
-                context.fillStyle = fillStyle;
-                context.fill();
-            }
-            if (strokeStyle) {
-                context.strokeStyle = strokeStyle;
-                context.stroke();
+        function drawGoomba(ctx) {
+            // Draw the head (a hexagon)
+            ctx.fillStyle = "#b5651d";
+            ctx.beginPath();
+            ctx.moveTo(200, 50);
+            ctx.lineTo(270, 100);
+            ctx.lineTo(270, 200);
+            ctx.lineTo(200, 250);
+            ctx.lineTo(130, 200);
+            ctx.lineTo(130, 100);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw the body (a rectangle)
+            ctx.fillStyle = "#f1e0c6";
+            ctx.fillRect(155, 250, 90, 80);
+
+            // Draw the feet (two circles)
+            ctx.fillStyle = "#8b4513";
+            ctx.beginPath();
+            ctx.arc(180, 350, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(220, 350, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw the eyes (two circles and black pupils)
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(170, 130, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(230, 130, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(170, 130, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(230, 130, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw the eyebrows (two rectangles)
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(150, 100, 40, 10);
+            ctx.fillRect(210, 100, 40, 10);
+
+            // Draw the mouth (a rectangle)
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(170, 170, 60, 10);
+            ctx.fillStyle = "#ffffff";
+            for (let i = 0; i < 7; i++) {
+                ctx.fillRect(170 + i * 10, 170, 5, 10);
             }
         }
 
-        function drawGoomba() {
+        window.onload = function() {
             const canvas = document.getElementById('goombaCanvas');
-            const context = canvas.getContext('2d');
-
-            // Clear canvas
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Define the goomba's head
-            const head = [
-                [250, 100],
-                [200, 150],
-                [300, 150]
-            ];
-
-            // Define the goomba's body
-            const body = [
-                [200, 150],
-                [300, 150],
-                [350, 250],
-                [150, 250]
-            ];
-
-            // Define the goomba's left foot
-            const leftFoot = [
-                [175, 250],
-                [225, 250],
-                [200, 300]
-            ];
-
-            // Define the goomba's right foot
-            const rightFoot = [
-                [275, 250],
-                [325, 250],
-                [300, 300]
-            ];
-
-            // Define the goomba's eyes
-            const leftEye = [
-                [220, 130],
-                [230, 130],
-                [225, 140]
-            ];
-            const rightEye = [
-                [270, 130],
-                [280, 130],
-                [275, 140]
-            ];
-
-            // Define the goomba's mouth
-            const mouth = [
-                [240, 160],
-                [260, 160],
-                [250, 170]
-            ];
-
-            // Draw the head
-            drawPolygon(context, head, '#8B4513', '#000000');
-
-            // Draw the body
-            drawPolygon(context, body, '#8B4513', '#000000');
-
-            // Draw the left foot
-            drawPolygon(context, leftFoot, '#A0522D', '#000000');
-
-            // Draw the right foot
-            drawPolygon(context, rightFoot, '#A0522D', '#000000');
-
-            // Draw the left eye
-            drawPolygon(context, leftEye, '#FFFFFF', '#000000');
-
-            // Draw the right eye
-            drawPolygon(context, rightEye, '#FFFFFF', '#000000');
-
-            // Draw the mouth
-            drawPolygon(context, mouth, '#000000', '#000000');
+            const ctx = canvas.getContext('2d');
+            drawGoomba(ctx);
         }
-
-        window.onload = drawGoomba;
     </script>
 </body>
 </html>
