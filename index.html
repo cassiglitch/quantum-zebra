@@ -21,71 +21,70 @@
 <body>
     <canvas id="goombaCanvas" width="400" height="400"></canvas>
     <script>
-        function drawGoomba(ctx, x, y, size) {
-            // Scale size
-            const headHeight = size * 2;
-            const bodyHeight = size;
-            const bodyWidth = size * 1.2;
-            const eyeRadius = size * 0.3;
-            const pupilRadius = size * 0.1;
-            const footRadius = size * 0.6;
-            const browWidth = size * 0.6;
-            const browHeight = size * 0.1;
-            const mouthWidth = size * 0.8;
-            const mouthHeight = size * 0.15;
+function drawGoomba(ctx, x, y, size) {
+    // Scale size
+    const headHeight = size * 2;
+    const bodyHeight = size;
+    const bodyWidth = size * 1.2;
+    const eyeRadius = size * 0.3;
+    const pupilRadius = size * 0.1;
+    const footRadius = size * 0.6;
+    const browWidth = size * 0.6;
+    const browHeight = size * 0.1;
+    const mouthWidth = size * 0.8;
+    const mouthHeight = size * 0.15;
 
-            // Draw the head (a hexagon)
-            ctx.fillStyle = "#b5651d";
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + size * 1.5, y + headHeight / 3);
-            ctx.lineTo(x + size * 1.5, y + headHeight);
-            ctx.lineTo(x, y + headHeight * 1.25);
-            ctx.lineTo(x - size * 1.5, y + headHeight);
-            ctx.lineTo(x - size * 1.5, y + headHeight / 3);
-            ctx.closePath();
-            ctx.fill();
+    // Draw the head (a hexagon)
+    ctx.fillStyle = "#b5651d";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + size * 1.5, y + headHeight / 3);
+    ctx.lineTo(x + size * 1.5, y + headHeight);
+    ctx.lineTo(x, y + headHeight * 1.25);
+    ctx.lineTo(x - size * 1.5, y + headHeight);
+    ctx.lineTo(x - size * 1.5, y + headHeight / 3);
+    ctx.closePath();
+    ctx.fill();
 
-            // Draw the body (a rectangle)
-            ctx.fillStyle = "#f1e0c6";
-            ctx.fillRect(x - bodyWidth, y + headHeight * 1 -(headHeight/8) , bodyWidth * 2, bodyHeight * 1.2);
+    // Draw the body (a rectangle)
+    ctx.fillStyle = "#f1e0c6";
+    ctx.fillRect(x - bodyWidth / 2, y + headHeight - (headHeight/8), bodyWidth, bodyHeight * 1.2);
 
-            // Draw the feet (two circles)
-            ctx.fillStyle = "#8b4513";
-            ctx.beginPath();
-            ctx.arc(x - size * 1, y + headHeight * 1 + bodyHeight + footRadius - (headHeight/2), footRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + size * 1, y + headHeight * 1 + bodyHeight + footRadius  - (headHeight/2), footRadius, 0, Math.PI * 2);
-            ctx.fill();
+    // Draw the feet (two circles)
+    ctx.fillStyle = "#8b4513";
+    ctx.beginPath();
+    ctx.arc(x - size * 1, y + headHeight + bodyHeight + footRadius - (headHeight/2), footRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + size * 1, y + headHeight + bodyHeight + footRadius - (headHeight/2), footRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-            // Draw the eyes (two circles and black pupils)
-            ctx.fillStyle = "#ffffff";
-            ctx.beginPath();
-            ctx.arc(x - size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
-            ctx.fill();
+    // Draw the eyes (two circles and black pupils)
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(x - size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + size * 0.5, y + headHeight / 2, eyeRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-            ctx.fillStyle = "#000000";
-            ctx.beginPath();
-            ctx.arc(x - size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
-            ctx.fill();
+    ctx.fillStyle = "#000000";
+    ctx.beginPath();
+    ctx.arc(x - size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + size * 0.5, y + headHeight / 2, pupilRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-            // Draw the eyebrows (two rectangles)
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(x - size * 0.8, y + headHeight / 3.5, browWidth, browHeight);
-            ctx.fillRect(x + size * 0.2, y + headHeight / 3.5, browWidth, browHeight);
+    // Draw the eyebrows (two rectangles)
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(x - size * 0.8, y + headHeight / 3.5, browWidth, browHeight);
+    ctx.fillRect(x + size * 0.2, y + headHeight / 3.5, browWidth, browHeight);
 
-            // Draw the mouth (a rectangle)
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(x - mouthWidth / 2, y + headHeight * 0.8, mouthWidth, mouthHeight)
-            }
-        }
+    // Draw the mouth (a rectangle)
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(x - mouthWidth / 2, y + headHeight * 0.8, mouthWidth, mouthHeight);
+}
 
         window.onload = function() {
             const canvas = document.getElementById('goombaCanvas');
