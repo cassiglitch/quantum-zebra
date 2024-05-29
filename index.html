@@ -34,6 +34,11 @@ function drawGoomba(ctx, x, y, size) {
     const mouthWidth = size * 0.8;
     const mouthHeight = size * 0.15;
 
+
+    // Draw the body (a rectangle)
+    ctx.fillStyle = "#f1e0c6";
+    ctx.fillRect(x - bodyWidth / 2, y + headHeight - (headHeight/8), bodyWidth * 2, bodyHeight * 1.2);
+
     // Draw the head (a hexagon)
     ctx.fillStyle = "#b5651d";
     ctx.beginPath();
@@ -45,10 +50,6 @@ function drawGoomba(ctx, x, y, size) {
     ctx.lineTo(x - size * 1.5, y + headHeight / 3);
     ctx.closePath();
     ctx.fill();
-
-    // Draw the body (a rectangle)
-    ctx.fillStyle = "#f1e0c6";
-    ctx.fillRect(x - bodyWidth / 2, y + headHeight - (headHeight/8), bodyWidth, bodyHeight * 1.2);
 
     // Draw the feet (two circles)
     ctx.fillStyle = "#8b4513";
