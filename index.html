@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merged Portal Animation</title>
+    <title>Merged Portal Animation with Parameters</title>
     <style>
         body, html {
             margin: 0;
@@ -22,7 +22,7 @@
 <body>
     <canvas id="portalCanvas"></canvas>
     <script>
-        function createPortalAnimation(x, y, maxRadius) {
+        function createPortalAnimation(x, y, maxSize, duration) {
             const canvas = document.getElementById('portalCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
@@ -30,13 +30,13 @@
 
             const portalCenter = { x: x, y: y };
             let portalRadius = 0;
-            let maxPortalRadius = maxRadius;
-            const closingTime = 5000; // 5 seconds
-            let startTime;
+            const maxRadius = Math.min(maxSize, Math.hypot(canvas.width, canvas.height) / 2);
 
             let particles = [];
             const numParticles = 200;
             let particleRadius = 3;
+            const closingTime = duration; // Set the duration for the portal to remain open
+            let startTime;
 
             // Initialize particles
             for (let i = 0; i < numParticles; i++) {
@@ -69,7 +69,7 @@
                     particle.distance += particle.speed * 10;
 
                     // Reset particle if it goes beyond max radius
-                    if (particle.distance > maxPortalRadius) {
+                    if (particle.distance > portalRadius) {
                         particle.angle = Math.random() * 2 * Math.PI;
                         particle.distance = Math.random() * portalRadius;
                     }
@@ -104,10 +104,10 @@
                 ctx.fill();
 
                 // Update portal radius
-                if (portalRadius < maxPortalRadius) {
+                if (portalRadius < maxRadius) {
                     portalRadius += 2;
-                } else if (elapsedTime >= closingTime && portalRadius > 0) {
-                    portalRadius -= 2;
+                } else {
+                    portalRadius = 0;
                 }
 
                 if (elapsedTime < closingTime || portalRadius > 0) {
@@ -119,8 +119,8 @@
             requestAnimationFrame(drawPortal);
         }
 
-        // Start portal animation with specified parameters
-        createPortalAnimation(window.innerWidth / 2, window.innerHeight / 2, Math.min(window.innerWidth, 50);
+        // Call the function with desired parameters
+        createPortalAnimation(window.innerWidth / 2, window.innerHeight / 2, 300, 5000); // Example parameters
     </script>
 </body>
 </html>
