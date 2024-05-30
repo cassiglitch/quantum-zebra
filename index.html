@@ -2171,7 +2171,7 @@ goombas.forEach(obstacle => {
   if (Math.abs(obstacle.y + 3 + 1.00) >= (canvas.height / gridSize)-epsilon) {
     if (goombadirection === 'left'){
      obstacle.x += 0.5
-     if (obstacle.x + 4 >= canvas.width/gridSize){
+     if (obstacle.x + 4 <= canvas.width/gridSize){
     goombadirection = 'right'
      }
     }
