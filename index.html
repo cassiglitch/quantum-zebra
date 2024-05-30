@@ -2345,7 +2345,9 @@ if (reflector.length === 15 && kamek.length === 0){
     let kamekY2 = Math.floor(Math.random() * (canvas.height / gridSize));
     // Call the function with desired parameters
     createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
+    setTimeout(() => {
     kamek.push({ x: kamekX2, y: kamekY2 });
+}, 2500);
     setTimeout(() => {
   isPaused = false;
 }, 5000);
