@@ -2169,16 +2169,16 @@ goombas.forEach(obstacle => {
   // Ensure we're close enough to the target to account for floating-point precision
   const epsilon = 0.01; // Small tolerance value
   if (Math.abs(obstacle.y + 3 + 1.00 - (canvas.height / gridSize)) <= epsilon) {
+    if (goombadirection === 'left'){
+     obstacle.x += 0.5
+     if (obstacle.x + 4 >= canvas.width/gridSize){
+    goombadirection = 'right'
+     }
+    }
     if (goombadirection === 'right') {
     obstacle.x -= 0.5;  // Moves the obstacle to the right
-    if (obstacle.x + 4 >= 20) {  // Assuming 20 is the right boundary
+    if (obstacle.x - 4 >= 0) {  // Assuming 20 is the right boundary
       goombadirection = 'left';
-    }
-  } 
-   if (goombadirection === 'left') {
-    obstacle.x += 0.5;  // Moves the obstacle to the left
-    if (obstacle.x - 4 <= 0) {  // Assuming 0 is the left boundary
-      goombadirection = 'right';
     }
   }   
   }
