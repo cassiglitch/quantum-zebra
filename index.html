@@ -299,7 +299,7 @@ document.addEventListener('keypress', function(event) {
     }
 });
                 function createPortalAnimation(x, y, maxSize, duration) {
-
+isPaused = true
             const portalCenter = { x: x, y: y };
             let portalRadius = 0;
             const maxRadius = Math.min(maxSize, Math.hypot(canvas.width, canvas.height) / 2);
@@ -390,7 +390,9 @@ document.addEventListener('keypress', function(event) {
                 } else if (portalRadius > 0) {
                     // Collapse the portal
                     portalRadius -= 2;
-                }
+                } else if (portalRadius === 0){
+           isPaused = false
+        }
 
                 // Exit the function if both conditions are met
                 if (portalRadius > 0 || elapsedTime < duration) {
@@ -400,9 +402,7 @@ document.addEventListener('keypress', function(event) {
 
             // Start animation
             requestAnimationFrame(drawPortal);
-        if (portalRadius === 0){
-            pauseGame()
-        }
+
                 }
 
 function getitem(enemytype){
