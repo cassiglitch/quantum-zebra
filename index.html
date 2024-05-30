@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merged Portal Animation with Parameters</title>
+    <title>Portal Animation with Duration and Maximum Radius</title>
     <style>
         body, html {
             margin: 0;
@@ -35,7 +35,6 @@
             let particles = [];
             const numParticles = 200;
             let particleRadius = 3;
-            const closingTime = duration; // Set the duration for the portal to remain open
             let startTime;
 
             // Initialize particles
@@ -104,13 +103,15 @@
                 ctx.fill();
 
                 // Update portal radius
-                if (portalRadius < maxRadius) {
+                if (portalRadius < maxRadius && elapsedTime < duration) {
                     portalRadius += 2;
-                } else {
-                    portalRadius = 0;
+                } else if (portalRadius > 0) {
+                    // Collapse the portal
+                    portalRadius -= 2;
                 }
 
-                if (elapsedTime < closingTime || portalRadius > 0) {
+                // Exit the function if both conditions are met
+                if (portalRadius > 0 || elapsedTime < duration) {
                     requestAnimationFrame(drawPortal);
                 }
             }
