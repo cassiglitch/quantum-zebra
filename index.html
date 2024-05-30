@@ -22,23 +22,21 @@
 <body>
     <canvas id="portalCanvas"></canvas>
     <script>
-        function createPortalAnimation() {
+        function createPortalAnimation(x, y, maxRadius) {
             const canvas = document.getElementById('portalCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            const portalCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+            const portalCenter = { x: x, y: y };
             let portalRadius = 0;
-            let maxRadius = Math.hypot(canvas.width, canvas.height) / 2;
+            let maxPortalRadius = maxRadius;
+            const closingTime = 5000; // 5 seconds
+            let startTime;
 
             let particles = [];
             const numParticles = 200;
             let particleRadius = 3;
-            const portalX = canvas.width / 2;
-            const portalY = canvas.height / 2;
-            const closingTime = 5000; // 5 seconds
-            let startTime;
 
             // Initialize particles
             for (let i = 0; i < numParticles; i++) {
@@ -54,8 +52,8 @@
             function drawParticle(particle) {
                 ctx.beginPath();
                 ctx.arc(
-                    portalX + particle.distance * Math.cos(particle.angle),
-                    portalY + particle.distance * Math.sin(particle.angle),
+                    portalCenter.x + particle.distance * Math.cos(particle.angle),
+                    portalCenter.y + particle.distance * Math.sin(particle.angle),
                     particleRadius,
                     0,
                     2 * Math.PI
@@ -71,7 +69,7 @@
                     particle.distance += particle.speed * 10;
 
                     // Reset particle if it goes beyond max radius
-                    if (particle.distance > maxRadius) {
+                    if (particle.distance > maxPortalRadius) {
                         particle.angle = Math.random() * 2 * Math.PI;
                         particle.distance = Math.random() * portalRadius;
                     }
@@ -106,10 +104,10 @@
                 ctx.fill();
 
                 // Update portal radius
-                if (portalRadius < maxRadius) {
+                if (portalRadius < maxPortalRadius) {
                     portalRadius += 2;
-                } else {
-                    portalRadius = 0;
+                } else if (elapsedTime >= closingTime && portalRadius > 0) {
+                    portalRadius -= 2;
                 }
 
                 if (elapsedTime < closingTime || portalRadius > 0) {
@@ -121,7 +119,8 @@
             requestAnimationFrame(drawPortal);
         }
 
-        createPortalAnimation();
+        // Start portal animation with specified parameters
+        createPortalAnimation(window.innerWidth / 2, window.innerHeight / 2, Math.min(window.innerWidth, 50);
     </script>
 </body>
 </html>
