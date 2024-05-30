@@ -2343,10 +2343,12 @@ if (score >= maxscore / 2) {
 if (reflector.length === 15 && kamek.length === 0){
     let kamekX2 = Math.floor(Math.random() * (canvas.width / gridSize));
     let kamekY2 = Math.floor(Math.random() * (canvas.height / gridSize));
-    pauseGame()
-            // Call the function with desired parameters
-        createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
+    // Call the function with desired parameters
+    createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
     kamek.push({ x: kamekX2, y: kamekY2 });
+    setTimeout(() => {
+  isPaused = false;
+}, 5000);
 }
             
             if (laser.isShooting) {
