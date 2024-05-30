@@ -300,7 +300,6 @@ document.addEventListener('keypress', function(event) {
     }
 });
                 function createPortalAnimation(x, y, maxSize, duration) {
-isPaused = true
             const portalCenter = { x: x, y: y };
             let portalRadius = 0;
             const maxRadius = Math.min(maxSize, Math.hypot(canvas.width, canvas.height) / 2);
@@ -2341,6 +2340,7 @@ if (score >= maxscore / 2) {
             }
     }
 if (reflector.length === 15 && kamek.length === 0 && kamekappears === false){
+    isPaused = true
     let kamekX2 = Math.floor(Math.random() * (canvas.width / gridSize));
     let kamekY2 = Math.floor(Math.random() * (canvas.height / gridSize));
     // Call the function with desired parameters
