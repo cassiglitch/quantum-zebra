@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rick and Morty Portal Animation</title>
+    <title>Merged Portal Animation</title>
     <style>
-        body {
+        body, html {
             margin: 0;
+            overflow: hidden;
+            background-color: black;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #000;
         }
         canvas {
             border: 1px solid #fff;
@@ -19,91 +20,108 @@
     </style>
 </head>
 <body>
-    <canvas id="portalCanvas" width="600" height="600"></canvas>
+    <canvas id="portalCanvas"></canvas>
     <script>
-        const canvas = document.getElementById('portalCanvas');
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
+        function createPortalAnimation() {
+            const canvas = document.getElementById('portalCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
-        let particles = [];
-        const numParticles = 200;
-        let portalRadius = 100;
-        const maxRadius = 200;
-        const portalX = width / 2;
-        const portalY = height / 2;
-        const closingTime = 5000; // 5 seconds
-        let startTime;
+            const portalCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+            let portalRadius = 0;
+            let maxRadius = Math.hypot(canvas.width, canvas.height) / 2;
 
-        // Initialize particles
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                angle: Math.random() * 2 * Math.PI,
-                distance: Math.random() * portalRadius,
-                speed: Math.random() * 0.05 + 0.01,
-                color: `hsl(${Math.random() * 60 + 60}, 100%, 50%)` // Greenish colors
-            });
-        }
+            let particles = [];
+            const numParticles = 200;
+            let particleRadius = 3;
+            const portalX = canvas.width / 2;
+            const portalY = canvas.height / 2;
+            const closingTime = 5000; // 5 seconds
+            let startTime;
 
-        // Draw a single particle
-        function drawParticle(particle) {
-            ctx.beginPath();
-            ctx.arc(
-                portalX + particle.distance * Math.cos(particle.angle),
-                portalY + particle.distance * Math.sin(particle.angle),
-                3,
-                0,
-                2 * Math.PI
-            );
-            ctx.fillStyle = particle.color;
-            ctx.fill();
-        }
-
-        // Update particles
-        function updateParticles() {
-            for (let particle of particles) {
-                particle.angle += particle.speed;
-                particle.distance += particle.speed * 10;
-
-                // Reset particle if it goes beyond max radius
-                if (particle.distance > maxRadius) {
-                    particle.angle = Math.random() * 2 * Math.PI;
-                    particle.distance = Math.random() * portalRadius;
-                }
-            }
-        }
-
-        // Draw portal
-        function drawPortal(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const elapsedTime = timestamp - startTime;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Update and draw particles
-            updateParticles();
-            for (let particle of particles) {
-                drawParticle(particle);
+            // Initialize particles
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    angle: Math.random() * 2 * Math.PI,
+                    distance: Math.random() * portalRadius,
+                    speed: Math.random() * 0.05 + 0.01,
+                    color: `hsl(${Math.random() * 60 + 60}, 100%, 50%)` // Greenish colors
+                });
             }
 
-            if (elapsedTime < closingTime) {
-                requestAnimationFrame(drawPortal);
-            } else {
-                // Closing animation
-                portalRadius -= 2;
-                if (portalRadius > 0) {
-                    for (let particle of particles) {
+            // Draw a single particle
+            function drawParticle(particle) {
+                ctx.beginPath();
+                ctx.arc(
+                    portalX + particle.distance * Math.cos(particle.angle),
+                    portalY + particle.distance * Math.sin(particle.angle),
+                    particleRadius,
+                    0,
+                    2 * Math.PI
+                );
+                ctx.fillStyle = particle.color;
+                ctx.fill();
+            }
+
+            // Update particles
+            function updateParticles() {
+                for (let particle of particles) {
+                    particle.angle += particle.speed;
+                    particle.distance += particle.speed * 10;
+
+                    // Reset particle if it goes beyond max radius
+                    if (particle.distance > maxRadius) {
+                        particle.angle = Math.random() * 2 * Math.PI;
                         particle.distance = Math.random() * portalRadius;
                     }
-                    requestAnimationFrame(drawPortal);
-                } else {
-                    ctx.clearRect(0, 0, width, height);
                 }
             }
+
+            // Draw portal
+            function drawPortal(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsedTime = timestamp - startTime;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Update and draw particles
+                updateParticles();
+                for (let particle of particles) {
+                    drawParticle(particle);
+                }
+
+                // Draw portal effect
+                const gradient = ctx.createRadialGradient(
+                    portalCenter.x, portalCenter.y, portalRadius / 2,
+                    portalCenter.x, portalCenter.y, portalRadius
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                gradient.addColorStop(0.5, 'rgba(0, 0, 255, 0.5)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+
+                ctx.beginPath();
+                ctx.arc(portalCenter.x, portalCenter.y, portalRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Update portal radius
+                if (portalRadius < maxRadius) {
+                    portalRadius += 2;
+                } else {
+                    portalRadius = 0;
+                }
+
+                if (elapsedTime < closingTime || portalRadius > 0) {
+                    requestAnimationFrame(drawPortal);
+                }
+            }
+
+            // Start animation
+            requestAnimationFrame(drawPortal);
         }
 
-        // Start animation
-        requestAnimationFrame(drawPortal);
+        createPortalAnimation();
     </script>
 </body>
 </html>
