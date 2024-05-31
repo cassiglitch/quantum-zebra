@@ -61,7 +61,7 @@
 
         let goombadirection = 'left'
         let goombaoffset = 1.00
-        let reflector = [{x:25, y:30},{x:10, y:15}, {x:5, y:20}, {x:35, y:5}, {x:40, y:25}, {x:15, y:10}, {x:21, y: 35},{x:30,y:15}, {x:20, y:35}, {x:25, y:40}, {y:10,x: 10}, {x:20, y:5},{x:15,y: 30},{x:26, y:35}, {x:35, y:20}]
+        let reflector = []
         let isFast = false
         let timezone = []
         let mirrors = []
@@ -104,7 +104,6 @@
         let neoncolor = '#39ff14';
         let sunset = '#00FFFF'
         let welldeleter = '#00FFFF80'
-        let kamekappears = false
         let taxrate = 0.20
         let timeslow = '#00ff8c'
         let timespeed = '#ff0073'
@@ -231,14 +230,15 @@ const randomIndex = Math.floor(Math.random() * obstacles2.length);
 const spawner = obstacles2[randomIndex];
 
 // Calculate random coordinates within the grid
-let x = Math.floor(Math.random() * (canvas.width / gridSize));
-let y = Math.floor(Math.random() * (canvas.height / gridSize));
+const x = Math.floor(Math.random() * (canvas.width / gridSize));
+const y = Math.floor(Math.random() * (canvas.height / gridSize));
 
 // Add the new obstacle or mirror at the random coordinates
 if (spawner !== goombas){
         spawner.push({ x, y });
         }else if(spawner === goombas){
     spawnGoombas(x, y)
+        }
         }
     }
 }
@@ -303,6 +303,7 @@ document.addEventListener('keypress', function(event) {
     }
 });
                 function createPortalAnimation(x, y, maxSize, duration) {
+
             const portalCenter = { x: x, y: y };
             let portalRadius = 0;
             const maxRadius = Math.min(maxSize, Math.hypot(canvas.width, canvas.height) / 2);
@@ -393,9 +394,7 @@ document.addEventListener('keypress', function(event) {
                 } else if (portalRadius > 0) {
                     // Collapse the portal
                     portalRadius -= 2;
-                } else if (portalRadius <= 0){
-           isPaused = false
-        }
+                }
 
                 // Exit the function if both conditions are met
                 if (portalRadius > 0 || elapsedTime < duration) {
@@ -405,17 +404,15 @@ document.addEventListener('keypress', function(event) {
 
             // Start animation
             requestAnimationFrame(drawPortal);
+        }
 
-                }
-
-    function spawnGoombas(x,y){
+function spawnGoombas(x,y){
             createPortalAnimation(x* gridSize, y * gridSize, 60, 1000);
     setTimeout(() => {
     goombas.push({ x: x, y: y });
 }, 500);
 
     }
-
 function getitem(enemytype){
 switch (enemytype) {
         case 'taxform':
@@ -2350,19 +2347,14 @@ if (score >= maxscore / 2) {
                 symbiote = Array.from({ length: snake.length }, (_, index) => ({ x: 10, y: 10 - index, type: type }));
             }
     }
-if (reflector.length === 15 && kamek.length === 0 && kamekappears === false){
-    isPaused = true
+
+if (reflector.length === 15 && kamek.length === 0){
     let kamekX2 = Math.floor(Math.random() * (canvas.width / gridSize));
     let kamekY2 = Math.floor(Math.random() * (canvas.height / gridSize));
-    // Call the function with desired parameters
-    kamekappears = true
-    createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
-    setTimeout(() => {
+    pauseGame()
+            // Call the function with desired parameters
+        createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
     kamek.push({ x: kamekX2, y: kamekY2 });
-}, 2500);
-    setTimeout(() => {
-  isPaused = false;
-}, 5000);
 }
             
             if (laser.isShooting) {
@@ -2504,7 +2496,6 @@ const rare = [obstacles, mirrors, wells, reflector]; // Possible directions
             pauseGame();
             shield = false
             inverted = false
-            kamekappears = false
             turrets = []
             goombas = []
             TaxFormGot = false
