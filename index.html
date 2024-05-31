@@ -27,35 +27,28 @@
     let crackStrength = 0;
     let cracks = [];
 
-    // Function to create a crack
-    function createCrack(x, y) {
-        cracks.push({
-            x: x,
-            y: y,
-            length: Math.random() * 100 + 50, // random length between 50 and 150
-            angle: Math.random() * Math.PI * 2 // random angle
-        });
+    // Function to create cracks based on crack strength
+    function createCracks() {
+        for (let i = 0; i < crackStrength * 10; i++) {
+            cracks.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                length: Math.random() * 100 + 50, // random length between 50 and 150
+                angle: Math.random() * Math.PI * 2 // random angle
+            });
+        }
     }
 
     // Function to update cracks
     function updateCracks() {
         // Increase crack strength
-        crackStrength += 0.1;
+        crackStrength += 0.01;
 
         // Create new cracks based on crack strength
-        if (crackStrength >= 1) {
-            for (let i = 0; i < 5; i++) {
-                createCrack(Math.random() * canvas.width, Math.random() * canvas.height);
-            }
-            crackStrength = 0;
-        }
+        createCracks();
 
-        // Update existing cracks
+        // Draw cracks
         cracks.forEach(crack => {
-            // Move crack
-            crack.x += Math.cos(crack.angle) * 2;
-            crack.y += Math.sin(crack.angle) * 2;
-
             // Draw crack
             ctx.beginPath();
             ctx.moveTo(crack.x, crack.y);
@@ -64,9 +57,6 @@
             ctx.lineWidth = 3;
             ctx.stroke();
         });
-
-        // Remove off-screen cracks
-        cracks = cracks.filter(crack => crack.x >= 0 && crack.x <= canvas.width && crack.y >= 0 && crack.y <= canvas.height);
     }
 
     // Animation loop
