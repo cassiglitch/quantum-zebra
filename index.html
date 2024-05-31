@@ -1,37 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dissolution Effect</title>
-  <style>
-    canvas {
-      width: 200px;
-      height: 200px;
-      background-color: blue;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            margin: 20px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            background-color: #87CEEB;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+
+        #basket {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 80px;
+            height: 40px;
+            background-color: #8B4513;
+            transform: translateX(-50%);
+        }
+
+        .ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FF4500;
+            border-radius: 50%;
+        }
+
+        #scoreBoard {
+            margin-top: 20px;
+        }
+
+        #scoreBoard p {
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="dissolveCanvas"></canvas>
-  <button onclick="dissolveElement()">Dissolve</button>
+    <h1>Catch the Ball Game</h1>
+    <div id="gameArea">
+        <div id="basket"></div>
+    </div>
+    <div id="scoreBoard">
+        <p>Score: <span id="score">0</span></p>
+    </div>
+    <script>
+        let score = 0;
+        const gameArea = document.getElementById('gameArea');
+        const basket = document.getElementById('basket');
+        const scoreDisplay = document.getElementById('score');
+        let basketPosition = gameArea.offsetWidth / 2 - basket.offsetWidth / 2;
 
-  <script>
-    function dissolveElement() {
-      var canvas = document.getElementById('dissolveCanvas');
-      var ctx = canvas.getContext('2d');
-      var alpha = 1.0;
-      var dissolveInterval = setInterval(function() {
-        alpha -= 0.01;
-        if (alpha <= 0) {
-          clearInterval(dissolveInterval);
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        } else {
-          ctx.globalAlpha = alpha;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        document.addEventListener('keydown', moveBasket);
+
+        function moveBasket(e) {
+            const step = 20;
+            if (e.key === 'ArrowLeft' && basketPosition > 0) {
+                basketPosition -= step;
+            } else if (e.key === 'ArrowRight' && basketPosition < gameArea.offsetWidth - basket.offsetWidth) {
+                basketPosition += step;
+            }
+            basket.style.left = `${basketPosition}px`;
         }
-      }, 10);
-    }
-  </script>
+
+        function createBall() {
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            ball.style.left = `${Math.random() * (gameArea.offsetWidth - 20)}px`;
+            ball.style.top = '0px';
+            gameArea.appendChild(ball);
+            moveBall(ball);
+        }
+
+        function moveBall(ball) {
+            let ballInterval = setInterval(() => {
+                let ballTop = parseInt(ball.style.top);
+                if (ballTop < gameArea.offsetHeight - 20) {
+                    ball.style.top = `${ballTop + 5}px`;
+                } else {
+                    clearInterval(ballInterval);
+                    checkCatch(ball);
+                }
+            }, 30);
+        }
+
+        function checkCatch(ball) {
+            const ballLeft = parseInt(ball.style.left);
+            const ballTop = parseInt(ball.style.top);
+            const basketLeft = basketPosition;
+            const basketRight = basketPosition + basket.offsetWidth;
+            if (ballTop >= gameArea.offsetHeight - 60 && ballLeft >= basketLeft && ballLeft <= basketRight) {
+                score++;
+                scoreDisplay.textContent = score;
+            }
+            ball.remove();
+        }
+
+        setInterval(createBall, 1000);
+    </script>
 </body>
 </html>
