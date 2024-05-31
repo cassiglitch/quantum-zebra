@@ -2726,7 +2726,12 @@ function resizeCanvas() {
         (food.y >= obstacle.y && food.y < obstacle.y + 2)
     ) ||
     mirrors.some(obstacle => obstacle.x === food.x && obstacle.y === food.y)
-|| timezone.some(obstacle => obstacle.x === food.x && obstacle.y === food.y)) {
+|| timezone.some(obstacle => obstacle.x === food.x && obstacle.y === food.y)
+||reflector.some(obstacle => obstacle.x === food.x && obstacle.y === food.y)
+||thwomps.some(obstacle => 
+        (food.x >= obstacle.x && food.x < obstacle.x + 2) &&
+        (food.y >= obstacle.y && food.y < obstacle.y + 2)
+    )) {
     food.x += 1;
     food.y += 1;
 }
