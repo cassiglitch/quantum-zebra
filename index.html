@@ -1,93 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Growing Cracks Effect</title>
-<style>
-    body {
-        margin: 0;
-        overflow: hidden;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dissolution Effect</title>
+  <style>
     canvas {
-        display: block;
+      width: 200px;
+      height: 200px;
+      background-color: blue;
     }
-</style>
+  </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-<script>
-    // Get the canvas element
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+  <canvas id="dissolveCanvas"></canvas>
+  <button onclick="dissolveElement()">Dissolve</button>
 
-    // Set canvas dimensions
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Array to hold cracks
-    let cracks = [];
-
-    // Create initial cracks
-    function createCracks() {
-        for (let i = 0; i < 5; i++) {
-            cracks.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                angle: Math.random() * Math.PI * 2,
-                length: 50,
-                growthRate: Math.random() * 2 + 1
-            });
+  <script>
+    function dissolveElement() {
+      var canvas = document.getElementById('dissolveCanvas');
+      var ctx = canvas.getContext('2d');
+      var alpha = 1.0;
+      var dissolveInterval = setInterval(function() {
+        alpha -= 0.01;
+        if (alpha <= 0) {
+          clearInterval(dissolveInterval);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.globalAlpha = alpha;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
+      }, 10);
     }
-
-    // Update crack length and position
-    function updateCracks() {
-        cracks.forEach(crack => {
-            crack.length += crack.growthRate;
-
-            // Wrap around edges
-            if (crack.x < 0 || crack.x > canvas.width || crack.y < 0 || crack.y > canvas.height) {
-                crack.x = Math.random() * canvas.width;
-                crack.y = Math.random() * canvas.height;
-            }
-        });
-    }
-
-    // Draw cracks
-    function drawCracks() {
-        cracks.forEach(crack => {
-            ctx.save();
-
-            ctx.translate(crack.x, crack.y);
-            ctx.rotate(crack.angle);
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(crack.length, 0);
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // Create clipping path for inside of crack
-            ctx.clip();
-            // Clear inside of the crack
-            ctx.clearRect(0, -2, crack.length, 4);
-
-            ctx.restore();
-        });
-    }
-
-    // Animation loop
-    function animate() {
-        requestAnimationFrame(animate);
-        updateCracks();
-        drawCracks();
-    }
-
-    // Initialize
-    createCracks();
-    animate();
-</script>
+  </script>
 </body>
 </html>
