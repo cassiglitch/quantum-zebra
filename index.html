@@ -77,6 +77,7 @@
         let snake = Array.from({ length: startingLength }, (_, index) => ({ x: 10, y: 10 - index, color: 'green' }));
         let food = { x: 0, y: 0};
         let obstacles = [];
+        let kamekappears = false
         let dynamicObstacles = [];
         let direction = 'right';
         let previousDirection = 'direction';
@@ -2348,14 +2349,21 @@ if (score >= maxscore / 2) {
             }
     }
 
-if (reflector.length === 8 && kamek.length === 0){
+if (reflector.length === 8 && kamek.length === 0 && kamekappears === false){
     let kamekX2 = Math.floor(Math.random() * (canvas.width / gridSize));
     let kamekY2 = Math.floor(Math.random() * (canvas.height / gridSize));
-    pauseGame()
+    isPaused = true
+    kamekappears = true
             // Call the function with desired parameters
         createPortalAnimation(kamekX2* gridSize, kamekY2 * gridSize, 120, 5000);
-    kamek.push({ x: kamekX2, y: kamekY2 });
+    setTimeout(() => {
+kamek.push({ x: kamekX2, y: kamekY2 });
+    }, 2500);
+    setTimeout(() => {
+        isPaused = false
+    }, 5000);
 }
+
             
             if (laser.isShooting) {
         obstacles.forEach((obstacle, index) => {
@@ -2520,6 +2528,7 @@ const rare = [obstacles, mirrors, wells, reflector]; // Possible directions
             lives = 0.5;
             livecount = 2;
             kamek = []
+            kamekappears = false
             reflector = []
             cangetvenom = true
             wells = []
