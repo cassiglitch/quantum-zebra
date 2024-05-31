@@ -231,8 +231,8 @@ const randomIndex = Math.floor(Math.random() * obstacles2.length);
 const spawner = obstacles2[randomIndex];
 
 // Calculate random coordinates within the grid
-const x = Math.floor(Math.random() * (canvas.width / gridSize));
-const y = Math.floor(Math.random() * (canvas.height / gridSize));
+let x = Math.floor(Math.random() * (canvas.width / gridSize));
+let y = Math.floor(Math.random() * (canvas.height / gridSize));
 
 // Add the new obstacle or mirror at the random coordinates
 if (spawner !== goombas){
@@ -243,7 +243,7 @@ let canvasHeightGrid = canvas.height / gridSize;
 
 do {
     y = Math.floor(Math.random() * (canvas.height / gridSize));
-} while (Math.abs(y - canvasHeightGrid) <- 4);
+} while (Math.abs(y - canvasHeightGrid) >= 4);
 
 spawnGoombas(x, y);
 
