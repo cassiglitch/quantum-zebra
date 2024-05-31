@@ -238,17 +238,7 @@ let y = Math.floor(Math.random() * (canvas.height / gridSize));
 if (spawner !== goombas){
         spawner.push({ x, y });
         }else if(spawner === goombas){
-    
-let canvasHeightGrid = canvas.height / gridSize;
-let isFourAway = Math.abs(y - canvasHeightGrid) >= 4
-
-while (isFourAway) {
-    y = Math.floor(Math.random() * (canvas.height / gridSize));
-    isFourAway = Math.abs(y - canvasHeightGrid) >= 4;
-}
-if (!isFourAway) {
-    spawnGoombas(x, y);
-}
+    spawnGoombas(x, y)
         }
     }
 }
