@@ -3,83 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reality Destabilization Effect</title>
+<title>Reality Destabilization</title>
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-  }
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
+    body {
+        margin: 0;
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+    }
 </style>
 </head>
 <body>
-<canvas id="crackCanvas" width="800" height="600"></canvas>
-
+<canvas id="crackCanvas"></canvas>
 <script>
-// Initialize variables
-let destabilization = 0; // Variable representing destabilization
-const maxDestabilization = 100; // Maximum destabilization level
-const crackLength = 30; // Length of each crack
-let cracks = []; // Array to store crack positions
+    // Set up the canvas
+    const canvas = document.getElementById('crackCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-// Function to increase destabilization
-function increaseDestabilization(amount) {
-  destabilization += amount;
-  // Check if destabilization has reached maximum
-  if (destabilization >= maxDestabilization) {
-    console.log("Reality is collapsing!"); // Display message when reality collapses
-    return;
-  }
-  // Create cracks
-  createCracks(amount);
-  // Render cracks
-  renderCracks();
-}
+    // Variables
+    let crackStrength = 0;
+    let cracks = [];
 
-// Function to create cracks
-function createCracks(amount) {
-  // Randomly choose a point for the crack origin
-  const originX = Math.random() * window.innerWidth;
-  const originY = Math.random() * window.innerHeight;
-  // Add cracks spreading from the origin point
-  for (let i = 0; i < amount; i++) {
-    const angle = Math.random() * Math.PI * 2; // Random angle
-    const length = Math.random() * crackLength; // Length of crack
-    const crack = {
-      x1: originX,
-      y1: originY,
-      x2: originX + Math.cos(angle) * length,
-      y2: originY + Math.sin(angle) * length,
-    };
-    cracks.push(crack); // Add crack to array
-  }
-}
+    // Function to create a crack
+    function createCrack(x, y) {
+        cracks.push({
+            x: x,
+            y: y,
+            length: Math.random() * 100 + 50, // random length between 50 and 150
+            angle: Math.random() * Math.PI * 2 // random angle
+        });
+    }
 
-// Function to render cracks
-function renderCracks() {
-  // Clear previous cracks
-  const canvas = document.getElementById("crackCanvas");
-  const ctx = canvas.getContext("2d");
-  // Draw new cracks
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 2; // Width of cracks
-  cracks.forEach(crack => {
-    ctx.beginPath();
-    ctx.moveTo(crack.x1, crack.y1);
-    ctx.lineTo(crack.x2, crack.y2);
-    ctx.stroke();
-  });
-}
+    // Function to update cracks
+    function updateCracks() {
+        // Increase crack strength
+        crackStrength += 0.1;
 
-// Example usage
-// Increase destabilization by 10
-increaseDestabilization(1000);
+        // Create new cracks based on crack strength
+        if (crackStrength >= 1) {
+            for (let i = 0; i < 5; i++) {
+                createCrack(Math.random() * canvas.width, Math.random() * canvas.height);
+            }
+            crackStrength = 0;
+        }
+
+        // Update existing cracks
+        cracks.forEach(crack => {
+            // Move crack
+            crack.x += Math.cos(crack.angle) * 2;
+            crack.y += Math.sin(crack.angle) * 2;
+
+            // Draw crack
+            ctx.beginPath();
+            ctx.moveTo(crack.x, crack.y);
+            ctx.lineTo(crack.x + Math.cos(crack.angle) * crack.length, crack.y + Math.sin(crack.angle) * crack.length);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        });
+
+        // Remove off-screen cracks
+        cracks = cracks.filter(crack => crack.x >= 0 && crack.x <= canvas.width && crack.y >= 0 && crack.y <= canvas.height);
+    }
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updateCracks();
+    }
+
+    animate();
 </script>
 </body>
 </html>
