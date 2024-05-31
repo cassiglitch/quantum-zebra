@@ -16,117 +16,153 @@
 </head>
 <body>
 <canvas id="crackCanvas"></canvas>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/delaunay/1.0.0/delaunay.min.js"></script>
+<script src="delaunay.min.js"></script>
+<script src="TweenMax.min.js"></script>
 <script>
-const TWO_PI = Math.PI * 2;
+    const TWO_PI = Math.PI * 2;
 
-let crackStrength = 1;
-let cracks = [];
+    var vertices = [],
+        indices = [],
+        fragments = [];
 
-const canvas = document.getElementById('crackCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    var container = document.getElementById('crackCanvas');
 
-let clickPosition = [canvas.width * 0.5, canvas.height * 0.5];
+    var clickPosition = [container.width * 0.5, container.height * 0.5];
 
-function triangulate() {
-    let rings = [
-        { r: 50, c: 12 },
-        { r: 150, c: 12 },
-        { r: 300, c: 12 },
-        { r: 1200, c: 12 } 
-    ];
+    container.addEventListener('click', imageClickHandler);
 
-    let x, y;
-    let centerX = clickPosition[0];
-    let centerY = clickPosition[1];
+    window.onload = function () {
+        placeCanvas();
+        triangulate();
+    };
 
-    let vertices = [];
-    vertices.push([centerX, centerY]);
-
-    rings.forEach(function (ring) {
-        let radius = ring.r;
-        let count = ring.c;
-        let variance = radius * 0.25;
-
-        for (let i = 0; i < count; i++) {
-            x = Math.cos((i / count) * TWO_PI) * radius + centerX + randomRange(-variance, variance);
-            y = Math.sin((i / count) * TWO_PI) * radius + centerY + randomRange(-variance, variance);
-            vertices.push([x, y]);
-        }
-    });
-
-    vertices.forEach(function (v) {
-        v[0] = clamp(v[0], 0, canvas.width);
-        v[1] = clamp(v[1], 0, canvas.height);
-    });
-
-    let indices = Delaunay.triangulate(vertices);
-    return indices;
-}
-
-function shatter() {
-    let indices = triangulate();
-
-    for (let i = 0; i < indices.length; i += 3) {
-        let p0 = vertices[indices[i + 0]];
-        let p1 = vertices[indices[i + 1]];
-        let p2 = vertices[indices[i + 2]];
-
-        cracks.push({
-            x: p0[0],
-            y: p0[1],
-            length: Math.sqrt((p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2),
-            angle: Math.atan2(p1[1] - p0[1], p1[0] - p0[0])
-        });
-
-        cracks.push({
-            x: p1[0],
-            y: p1[1],
-            length: Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2),
-            angle: Math.atan2(p2[1] - p1[1], p2[0] - p1[0])
-        });
-
-        cracks.push({
-            x: p2[0],
-            y: p2[1],
-            length: Math.sqrt((p2[0] - p0[0]) ** 2 + (p2[1] - p0[1]) ** 2),
-            angle: Math.atan2(p0[1] - p2[1], p0[0] - p2[0])
-        });
+    function placeCanvas() {
+        var canvas = document.createElement('canvas');
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        container.appendChild(canvas);
     }
-}
 
-function animate() {
-    requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    crackStrength += 0.01;
-    if (crackStrength >= 1) {
+    function imageClickHandler(event) {
+        clickPosition[0] = event.clientX - container.getBoundingClientRect().left;
+        clickPosition[1] = event.clientY - container.getBoundingClientRect().top;
+
+        triangulate();
         shatter();
-        crackStrength = 0;
     }
 
-    cracks.forEach(crack => {
-        ctx.beginPath();
-        ctx.moveTo(crack.x, crack.y);
-        ctx.lineTo(crack.x + Math.cos(crack.angle) * crack.length, crack.y + Math.sin(crack.angle) * crack.length);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    });
-}
+    function triangulate() {
+        var rows = 10,
+            cols = 10,
+            x, y;
 
-animate();
+        vertices = [];
 
-// Helper functions
-function randomRange(min, max) {
-    return min + Math.random() * (max - min);
-}
+        for (var i = 0; i < rows; i++) {
+            for (var j = 0; j < cols; j++) {
+                x = (j / (cols - 1)) * container.width;
+                y = (i / (rows - 1)) * container.height;
+                vertices.push([x, y]);
+            }
+        }
 
-function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-}
+        indices = Delaunay.triangulate(vertices);
+    }
+
+    function shatter() {
+        var p0, p1, p2,
+            fragment;
+
+        for (var i = 0; i < indices.length; i += 3) {
+            p0 = vertices[indices[i + 0]];
+            p1 = vertices[indices[i + 1]];
+            p2 = vertices[indices[i + 2]];
+
+            fragment = new Fragment(p0, p1, p2);
+            fragment.shatter();
+            fragments.push(fragment);
+        }
+    }
+
+    /////////////
+    // FRAGMENT
+    /////////////
+
+    function Fragment(v0, v1, v2) {
+        this.v0 = v0;
+        this.v1 = v1;
+        this.v2 = v2;
+
+        this.computeBoundingBox();
+        this.createCanvas();
+        this.clip();
+    }
+
+    Fragment.prototype = {
+        computeBoundingBox: function () {
+            var xMin = Math.min(this.v0[0], this.v1[0], this.v2[0]),
+                xMax = Math.max(this.v0[0], this.v1[0], this.v2[0]),
+                yMin = Math.min(this.v0[1], this.v1[1], this.v2[1]),
+                yMax = Math.max(this.v0[1], this.v1[1], this.v2[1]);
+
+            this.box = {
+                x: xMin,
+                y: yMin,
+                w: xMax - xMin,
+                h: yMax - yMin
+            };
+        },
+        createCanvas: function () {
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = this.box.w;
+            this.canvas.height = this.box.h;
+            this.canvas.style.width = this.box.w + 'px';
+            this.canvas.style.height = this.box.h + 'px';
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.left = this.box.x + 'px';
+            this.canvas.style.top = this.box.y + 'px';
+            this.ctx = this.canvas.getContext('2d');
+            container.appendChild(this.canvas);
+        },
+        clip: function () {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.v0[0], this.v0[1]);
+            this.ctx.lineTo(this.v1[0], this.v1[1]);
+            this.ctx.lineTo(this.v2[0], this.v2[1]);
+            this.ctx.closePath();
+            this.ctx.clip();
+        },
+        shatter: function () {
+            var dx = this.box.w * 0.5 - clickPosition[0],
+                dy = this.box.h * 0.5 - clickPosition[1],
+                d = Math.sqrt(dx * dx + dy * dy),
+                rx = 30 * sign(dy),
+                ry = 90 * -sign(dx),
+                delay = d * 0.003 * randomRange(0.9, 1.1);
+
+            var self = this;
+
+            TweenMax.to(this.canvas, 1, {
+                x: randomRange(-500, 500),
+                y: randomRange(-500, 500),
+                rotationX: rx,
+                rotationY: ry,
+                ease: Cubic.easeIn,
+                onComplete: function () {
+                    container.removeChild(self.canvas);
+                }
+            });
+        }
+    };
+
+    // Math Utils
+    function randomRange(min, max) {
+        return min + (max - min) * Math.random();
+    }
+
+    function sign(x) {
+        return x < 0 ? -1 : 1;
+    }
 </script>
 </body>
 </html>
