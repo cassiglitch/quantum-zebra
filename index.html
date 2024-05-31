@@ -96,7 +96,6 @@
         let freezetimer = 5;
         let isFoodOrange = false;
         let inverted = false;
-        let particles = [];
         let livecount = 2;
         let pausetimer = 900;
         let TaxFormGot = false
@@ -310,7 +309,7 @@ document.addEventListener('keypress', function(event) {
             let portalRadius = 0;
             const maxRadius = Math.min(maxSize, Math.hypot(canvas.width, canvas.height) / 2);
 
-            
+            let particles = [];
             const numParticles = 2000;
             let particleRadius = 3;
             let startTime;
@@ -341,8 +340,8 @@ document.addEventListener('keypress', function(event) {
 
             // Update particles
             function updateParticles(elapsedTime) {
-                if (elapsedTime >= duration) {
- // Clear particles array when duration elapses
+                if (elapsedTime >= duration && portalRadius < 0) {
+                    particles = []; // Clear particles array when duration elapses
                     return;
                 }
                 for (let particle of particles) {
@@ -2362,7 +2361,6 @@ kamek.push({ x: kamekX2, y: kamekY2 });
     }, 2500);
     setTimeout(() => {
         isPaused = false
-        particles = []
     }, 5000);
 }
 
@@ -2554,7 +2552,7 @@ const rare = [obstacles, mirrors, wells, reflector]; // Possible directions
         }
         
 // Set up explosion animation properties
-let particles2 = [];
+let particles = [];
 const numParticles = 200;
 const explosionForce = 50;
 const holeSize = 20 * antiZoomFactor;
@@ -2605,14 +2603,14 @@ function Particle(x, y, radius, color, headX, headY) {
             const headY = getSnakeHeadY();
             for (let i = 0; i < numParticles; i++) {
                 const particle = new Particle(0, 0, 5, color, headX, headY);
-                particles2.push(particle);
+                particles.push(particle);
             }
         }
 
 
 function simulateHoles(color) {
     ctx.fillStyle = color; // Use the color passed as a parameter
-    particles2.forEach(particle => {
+    particles.forEach(particle => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, holeSize, 0, Math.PI * 2);
         ctx.fill();
@@ -2624,10 +2622,10 @@ function animateExplosion() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Update and draw particles
-    particles2.forEach((particle, index) => {
-        particle2.update();
+    particles.forEach((particle, index) => {
+        particle.update();
         if (particle.alpha <= 0) {
-            particles2.splice(index, 1);
+            particles.splice(index, 1);
         }
     });
 
@@ -2635,7 +2633,7 @@ function animateExplosion() {
     simulateHoles(particles[0].color); // Pass the color of the first particle
 
     // Request animation frame
-    if (particles2.length > 0) {
+    if (particles.length > 0) {
         requestAnimationFrame(animateExplosion);
     }
 }
