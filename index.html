@@ -1436,22 +1436,18 @@ const laser = {
     x2: 0,
     y2: 0,
     width: gridSize// Width of the laser (in pixels)
-};let startX, startY, endX, endY;
+};
+
+// Handle tap events for shooting the laser
+let tapStartX = 0;
+let tapStartY = 0;
+let tapEndX = 0;
+let tapEndY = 0;
 
 function handleTapStart(event) {
     if (event.type === 'touchstart') {
         startX = event.touches[0].clientX;
         startY = event.touches[0].clientY;
-        
-        // Create a synthetic mousedown event
-        const mouseDownEvent = new MouseEvent('mousedown', {
-            bubbles: true,
-            cancelable: true,
-            view: window
-        });
-
-        // Dispatch the mousedown event on the touched element
-        event.target.dispatchEvent(mouseDownEvent);
     } else if (event.type === 'mousedown') {
         startX = event.clientX;
         startY = event.clientY;
@@ -1459,9 +1455,9 @@ function handleTapStart(event) {
 }
 
 function handleTapEnd(event) {
-    if (event.type === 'touchend') { 
-        endX = event.clientX;
-        endY = event.clientY;
+    if (event.type === 'touchend') {
+        endX = event.changedTouches[0].clientX;
+        endY = event.changedTouches[0].clientY;
     } else if (event.type === 'mouseup') {
         endX = event.clientX;
         endY = event.clientY;
@@ -1481,6 +1477,19 @@ function handleTapEnd(event) {
             shootLaser(canvasX, canvasY);
         }
     }
+}
+if (firstControlSchemeSet) {
+    // Add event listeners
+    canvas.addEventListener('touchstart', handleTapStart);
+    canvas.addEventListener('touchend', handleTapEnd);
+    canvas.addEventListener('mousedown', handleTapStart);
+    canvas.addEventListener('mouseup', handleTapEnd);
+} else {
+    // Remove event listeners
+    canvas.removeEventListener('touchstart', handleTapStart);
+    canvas.removeEventListener('touchend', handleTapEnd);
+    canvas.removeEventListener('mousedown', handleTapStart);
+    canvas.removeEventListener('mouseup', handleTapEnd);
 }
 
 // Drawing function to draw the laser with fade effect
@@ -1604,8 +1613,6 @@ if (kamekappears === true){
 
 }
         // After 5 seconds, reset the shooting state and fade out the laser
-
-        
             isShooting = false;
             charging = true;
         
@@ -1743,8 +1750,10 @@ ctx.fillStyle = 'black';
         // Draw Score
     const scoreDisplay = document.getElementById('scoreDisplay');
     scoreDisplay.innerHTML = `Score: ${score}<br>Lives: ${livecount}`;
-    drawLaser();
-}
+ 
+    if (firstControlSchemeSet) {
+drawLaser();
+}}
 
 function drawInvincibilityAura(colorName) {
     // Mapping of color names to RGBA values
@@ -2702,20 +2711,6 @@ function animateExplosion() {
             resizeCanvasHeight();
             update();
             draw();
-if (firstControlSchemeSet) {
-    // Add event listeners
-    canvas.addEventListener('touchstart', handleTapStart);
-    canvas.addEventListener('touchend', handleTapEnd);
-    canvas.addEventListener('mousedown', handleTapStart);
-    canvas.addEventListener('mouseup', handleTapEnd);
-} else {
-    // Remove event listeners
-    canvas.removeEventListener('touchstart', handleTapStart);
-    canvas.removeEventListener('touchend', handleTapEnd);
-    canvas.removeEventListener('mousedown', handleTapStart);
-    canvas.removeEventListener('mouseup', handleTapEnd);
-}
-
             if (isGravityWellActive === true && wells.length !== 0){
             checkDistance(snake)
             }
