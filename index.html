@@ -1,106 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ninjago Fighting Game</title>
-<style>
-    canvas {
-        border: 1px solid black;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninjago Platform Fighter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        canvas {
+            display: block;
+            margin: auto;
+            border: 1px solid #000;
+        }
+    </style>
 </head>
 <body>
-<canvas id="pixelArtCanvas" width="200" height="200"></canvas>
-<script>
-const canvas = document.getElementById('pixelArtCanvas');
-const ctx = canvas.getContext('2d');
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-// Define the pixel size
-const pixelSize = 10;
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-// Define ninjas
-const ninjas = [
-    { name: 'Jay', colorScheme: { blue: '#0000FF', yellow: '#FFFF00', black: '#000000', white: '#FFFFFF' }, moveset: 'Lightning Strike' },
-    { name: 'Kai', colorScheme: { red: '#FF0000', yellow: '#FFFF00', black: '#000000', white: '#FFFFFF' }, moveset: 'Fire Spin' },
-    { name: 'Zane', colorScheme: { silver: '#C0C0C0', blue: '#0000FF', black: '#000000', white: '#FFFFFF' }, moveset: 'Ice Blast' },
-    { name: 'Cole', colorScheme: { black: '#000000', brown: '#8B4513', white: '#FFFFFF' }, moveset: 'Earthquake' }
-];
+        // Define ninja powers
+        const ninjaPowers = {
+            "Kai": "Fire",
+            "Jay": "Lightning",
+            "Cole": "Earth",
+            "Zane": "Ice",
+            "Lloyd": "Energy",
+            "Nya": "Water",
+            "Morro": "Wind"
+        };
 
-// Function to draw a pixel
-function drawPixel(x, y, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-}
+        // Define move sets for each ninja
+        const moveSets = {
+            "Kai": ["Fire Spin", "Fireball", "Dragon Kick"],
+            "Jay": ["Lightning Strike", "Thunderclap", "Nunchuck Fury"],
+            "Cole": ["Earthquake", "Rockslide", "Tornado of Creation"],
+            "Zane": ["Ice Blast", "Shuriken Storm", "Blizzard Strike"],
+            "Lloyd": ["Golden Power", "Spinjitzu Burst", "Green Dragon Wave"],
+            "Nya": ["Water Whip", "Tsunami Slash", "Hydro Storm"],
+            "Morro": ["Wind Slash", "Cyclone Blast", "Shadow Tornado"]
+        };
 
-// Draw a ninja
-function drawNinja(ninja) {
-    const colorScheme = ninja.colorScheme;
+        // Player object
+        const player = {
+            x: 50,
+            y: canvas.height - 150,
+            width: 50,
+            height: 50,
+            color: '#ff0000',
+            speed: 5,
+            power: null, // Will be assigned based on selection
+            moveset: null, // Will be assigned based on selection
+            isPossessed: false
+        };
 
-    // Head
-    drawPixel(4, 1, colorScheme.blue);
-    drawPixel(5, 1, colorScheme.blue);
-    drawPixel(3, 2, colorScheme.blue);
-    drawPixel(6, 2, colorScheme.blue);
-    drawPixel(2, 3, colorScheme.blue);
-    drawPixel(7, 3, colorScheme.blue);
-    drawPixel(2, 4, colorScheme.blue);
-    drawPixel(7, 4, colorScheme.blue);
-    drawPixel(2, 5, colorScheme.blue);
-    drawPixel(7, 5, colorScheme.blue);
-    drawPixel(3, 6, colorScheme.blue);
-    drawPixel(6, 6, colorScheme.blue);
-    drawPixel(4, 7, colorScheme.blue);
-    drawPixel(5, 7, colorScheme.blue);
+        // Enemy object
+        const enemy = {
+            x: canvas.width - 100,
+            y: canvas.height - 150,
+            width: 50,
+            height: 50,
+            color: '#00ff00',
+            speed: 3,
+            power: null, // Will be assigned based on selection
+            moveset: null, // Will be assigned based on selection
+            isPossessed: false
+        };
 
-    // Eyes
-    drawPixel(4, 2, colorScheme.white);
-    drawPixel(5, 2, colorScheme.white);
-    drawPixel(4, 3, colorScheme.black);
-    drawPixel(5, 3, colorScheme.black);
+        // Spinjitzu object
+        const spinjitzu = {
+            x: 0,
+            y: 0,
+            radius: 50,
+            color: 'rgba(255, 165, 0, 0.5)',
+            active: false,
+            duration: 3000, // Duration in milliseconds
+            startTime: 0
+        };
 
-    // Mouth
-    drawPixel(4, 4, colorScheme.yellow);
-    drawPixel(5, 4, colorScheme.yellow);
-    drawPixel(3, 5, colorScheme.yellow);
-    drawPixel(6, 5, colorScheme.yellow);
-}
+        // Unlock Morro
+        let unlockedMorro = false;
 
-// Clear the canvas
-function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+        // Player object for Morro
+        const morroPlayer = {
+            x: 50,
+            y: canvas.height - 150,
+            width: 50,
+            height: 50,
+            color: '#800080', // Purple color for Morro
+            speed: 7,
+            power: ninjaPowers["Morro"], // Morro's power is Wind
+            moveset: moveSets["Morro"],
+            isPossessed: true
+        };
 
-// Draw a ninja when the page loads
-drawNinja(ninjas[0]);
+        // Select screen
+        function selectScreen() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Select Your Ninja:", canvas.width / 2 - 150, 50);
 
-// Handle keyboard input for moving the ninja
-document.addEventListener('keydown', function(event) {
-    switch(event.key) {
-        case 'ArrowUp':
-            moveNinja('up');
-            break;
-        case 'ArrowDown':
-            moveNinja('down');
-            break;
-        case 'ArrowLeft':
-            moveNinja('left');
-            break;
-        case 'ArrowRight':
-            moveNinja('right');
-            break;
-    }
-});
+            let y = 100;
+            for (const ninja in ninjaPowers) {
+                ctx.fillText(ninja, canvas.width / 2 - 50, y);
+                y += 50;
+            }
+        }
 
-// Move the ninja
-function moveNinja(direction) {
-    // Add code here to move the ninja
-}
+        // Event listener for select screen
+        let selectedNinja = null;
+        document.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
 
-// Handle attacks
-function attack(ninja) {
-    // Add code here to perform the ninja's unique moveset
-}
-</script>
+            let y = 100;
+            for (const ninja in ninjaPowers) {
+                if (mouseX > canvas.width / 2 - 50 && mouseX < canvas.width / 2 + 50 && mouseY > y - 30 && mouseY < y) {
+                    selectedNinja = ninja;
+                    break;
+                }
+                y += 50;
+            }
+
+            if (selectedNinja) {
+                console.log(`Selected Ninja: ${selectedNinja}`);
+                startGame();
+            }
+        });
+
+        // Start game function
+        function startGame() {
+            console.log("Game started!");
+            // Initialize player and enemy positions
+            player.x = 50;
+            enemy.x = canvas.width - 100;
+
+            // Assign powers and movesets based on selection
+            player.power = ninjaPowers[selectedNinja];
+            player.moveset = moveSets[selectedNinja];
+            enemy.power = ninjaPowers[selectedNinja === "Morro" ? "Lloyd" : selectedNinja];
+            enemy.moveset = moveSets[selectedNinja === "Morro" ? "Lloyd" : selectedNinja];
+        }
+
+        // Check if Spinjitzu is active
+        function isSpinjitzuActive() {
+            return spinjitzu.active && (Date.now() - spinjitzu.startTime < spinjitzu.duration);
+        }
+
+        // Render game objects
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!selectedNinja) {
+                selectScreen();
+            } else {
+                // Draw background
+                // For simplicity, just fill with black
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw player
+                ctx.fillStyle = player.isPossessed ? morroPlayer.color : player.color;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+
+                // Draw enemy
+                ctx.fillStyle = enemy.isPossessed ? morroPlayer.color : enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+                // Draw Spinjitzu
+                if (isSpinjitzuActive()) {
+                    ctx.beginPath();
+                    ctx.arc(player.x + player.width / 2, player.y + player.height / 2, spinjitzu.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = spinjitzu.color;
+                    ctx.fill();
+                    ctx.closePath();
+                }
+
+                // Draw Morro
+                if (unlockedMorro) {
+                    ctx.fillStyle = morroPlayer.color;
+                    ctx.fillRect(morroPlayer.x, morroPlayer.y, morroPlayer.width, morroPlayer.height);
+                }
+            }
+        }
+
+        // Game loop
+        function         gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners for player movement
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                movePlayer('left');
+            } else if (event.key === 'ArrowRight') {
+                movePlayer('right');
+            }
+        });
+
+        // Handle player movement
+        function movePlayer(direction) {
+            if (!isSpinjitzuActive() && !player.isPossessed) {
+                if (direction === 'left' && player.x > 0) {
+                    player.x -= player.speed;
+                } else if (direction === 'right' && player.x < canvas.width - player.width) {
+                    player.x += player.speed;
+                }
+            }
+        }
+
+        // Update game objects
+        function update() {
+            // Move enemy
+            if (enemy.x > 0) {
+                enemy.x -= enemy.speed;
+            } else {
+                enemy.x = canvas.width - enemy.width;
+            }
+
+            // Check for collision with enemy
+            if (!isSpinjitzuActive() && checkCollision(player, enemy)) {
+                console.log('Collision detected with enemy!');
+                // Handle collision with enemy
+            }
+
+            // Check for collision with Spinjitzu
+            if (isSpinjitzuActive() && checkCollision(player, spinjitzu)) {
+                console.log('Collision detected with Spinjitzu!');
+                // Handle collision with Spinjitzu
+            }
+        }
+
+        // Check collision between two objects
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                obj1.x + obj1.width > obj2.x &&
+                obj1.y < obj2.y + obj2.height &&
+                obj1.y + obj1.height > obj2.y;
+        }
+
+        // Unlock Morro
+        function unlockMorro() {
+            unlockedMorro = true;
+            console.log('Morro unlocked!');
+        }
+
+        // Activate Spinjitzu
+        function activateSpinjitzu() {
+            spinjitzu.active = true;
+            spinjitzu.startTime = Date.now();
+        }
+
+        // Event listener for power selection
+        document.addEventListener('keypress', (event) => {
+            const key = event.key.toLowerCase();
+            if (Object.keys(ninjaPowers).includes(key)) {
+                selectedNinja = key;
+                startGame();
+            }
+        });
+
+        // Start the game loop
+        gameLoop();
+    </script>
 </body>
 </html>
