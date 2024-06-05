@@ -1458,9 +1458,6 @@ function handleTapEnd(event) {
     if (event.type === 'touchend') {
         endX = event.changedTouches[0].clientX;
         endY = event.changedTouches[0].clientY;
-        if (!firstControlSchemeSet){
-            firstControlSchemeSet = false
-        }
     } else if (event.type === 'mouseup') {
         endX = event.clientX;
         endY = event.clientY;
@@ -1608,9 +1605,7 @@ if (kamekappears === true){
 }
         // After 5 seconds, reset the shooting state and fade out the laser
 
-        setTimeout(() => {
-    isShooting = false;
-     }, 5000);
+        
             isShooting = false;
             charging = true;
         
@@ -1748,10 +1743,7 @@ ctx.fillStyle = 'black';
         // Draw Score
     const scoreDisplay = document.getElementById('scoreDisplay');
     scoreDisplay.innerHTML = `Score: ${score}<br>Lives: ${livecount}`;
-    if(laser.isShooting === true)
-    {
-        drawLaser();
-    }
+    drawLaser();
 }
 
 function drawInvincibilityAura(colorName) {
