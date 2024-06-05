@@ -109,7 +109,7 @@
         let taxrate = 0.20
         let timeslow = '#00ff8c'
         let timespeed = '#ff0073'
-        let esnake = [];
+        let esnake =  Array.from({ length: startingLength }, (_, index) => ({ x: 1, y: 10 - index, color: timespeed, damage: false, type:'IRS' }));
         let turrets = []
         let symbiote = [];
         let controlsinverted = false
@@ -1444,7 +1444,7 @@ let tapStartY = 0;
 let tapEndX = 0;
 let tapEndY = 0;
 
-function handleTapStart(event) {
+function handleLaserTapStart(event) {
     if (event.type === 'touchstart') {
         startX = event.touches[0].clientX;
         startY = event.touches[0].clientY;
@@ -1454,7 +1454,7 @@ function handleTapStart(event) {
     }
 }
 
-function handleTapEnd(event) {
+function handleLaserTapEnd(event) {
     if (event.type === 'touchend') {
         endX = event.changedTouches[0].clientX;
         endY = event.changedTouches[0].clientY;
@@ -1478,10 +1478,10 @@ function handleTapEnd(event) {
         }
     }
 }
-canvas.addEventListener('touchstart', handleTapStart);
-canvas.addEventListener('touchend', handleTapEnd);
-canvas.addEventListener('mousedown', handleTapStart);
-canvas.addEventListener('mouseup', handleTapEnd);
+canvas.addEventListener('touchstart', handleLaserTapStart);
+canvas.addEventListener('touchend', handleLaserTapEnd);
+canvas.addEventListener('mousedown', handleLaserTapStart);
+canvas.addEventListener('mouseup', handleLaserTapEnd);
 
 // Drawing function to draw the laser with fade effect
 function drawLaser() {
@@ -1974,10 +1974,13 @@ esnake.forEach(enemySegment => enemySegment.damage = true)
 }
 if (esnake[0].type === 'IRS' && esnake[0].damage === false) {
         let tax = score * taxrate;
-        score -= tax;
+    let prescore = score   
+    score -= tax;
         score = Math.floor(score);
+    if (score !== prescore){
         esnake.forEach(enemySegment => enemySegment.damage = true);
     }
+}
 
     if (!isInvincible && esnake.some(segment => segment.x === snake[1].x && segment.y === snake[1].y && segment.damage === false && segment.type === 'IRS')) {
         isTaxed = false;
