@@ -2527,9 +2527,15 @@ const id = Math.random() < 0.5 ? 1 : 2;
             thwomps.push({ x: x, y: 0, state: 1 });
         } else {
            let otype = 0
+if (controltype === 'arrow'){
 const rare = [obstacles, mirrors, wells, reflector, reflector]; // Possible directions
-    const randomIndex2 = Math.floor(Math.random() * rare.length);
+const randomIndex2 = Math.floor(Math.random() * rare.length);
     otype = rare[randomIndex2];
+}else if (controltype === 'mobile'){
+const rare = [obstacles, mirrors, reflector, reflector]; // Possible directions    
+const randomIndex2 = Math.floor(Math.random() * rare.length);
+    otype = rare[randomIndex2];
+}
             otype.push({x:x, y:y})
 
         }
