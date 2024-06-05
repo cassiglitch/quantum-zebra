@@ -1436,30 +1436,22 @@ const laser = {
     x2: 0,
     y2: 0,
     width: gridSize// Width of the laser (in pixels)
-};
-
-// Handle tap events for shooting the laser
-let tapStartX = 0;
-let tapStartY = 0;
-let tapEndX = 0;
-let tapEndY = 0;
-
-let startX, startY, endX, endY;
+};let startX, startY, endX, endY;
 
 function handleTapStart(event) {
     if (event.type === 'touchstart') {
         startX = event.touches[0].clientX;
         startY = event.touches[0].clientY;
         
-        // Create a synthetic click event
-        const clickEvent = new MouseEvent('click', {
+        // Create a synthetic mousedown event
+        const mouseDownEvent = new MouseEvent('mousedown', {
             bubbles: true,
             cancelable: true,
             view: window
         });
 
-        // Dispatch the click event on the touched element
-        event.target.dispatchEvent(clickEvent);
+        // Dispatch the mousedown event on the touched element
+        event.target.dispatchEvent(mouseDownEvent);
     } else if (event.type === 'mousedown') {
         startX = event.clientX;
         startY = event.clientY;
@@ -1467,9 +1459,9 @@ function handleTapStart(event) {
 }
 
 function handleTapEnd(event) {
-    if (event.type === 'touchend') {
-        endX = event.changedTouches[0].clientX;
-        endY = event.changedTouches[0].clientY;
+    if (event.type === 'touchend') { 
+        endX = event.changedTouches ? event.changedTouches[0].clientX : event.clientX;
+        endY = event.changedTouches ? event.changedTouches[0].clientY : event.clientY;
     } else if (event.type === 'mouseup') {
         endX = event.clientX;
         endY = event.clientY;
@@ -1495,7 +1487,6 @@ canvas.addEventListener('touchstart', handleTapStart);
 canvas.addEventListener('touchend', handleTapEnd);
 canvas.addEventListener('mousedown', handleTapStart);
 canvas.addEventListener('mouseup', handleTapEnd);
-
 
 // Drawing function to draw the laser with fade effect
 function drawLaser() {
