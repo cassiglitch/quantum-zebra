@@ -1,137 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ninjago Fighting Game</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-        }
-
-        #game-container {
-            position: relative;
-            width: 800px;
-            height: 400px;
-            background-color: #f0f0f0;
-            border: 2px solid #333;
-        }
-
-        canvas {
-            display: block;
-            background-color: #f0f0f0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ninjago Fighting Game</title>
+<style>
+    canvas {
+        border: 1px solid black;
+    }
+</style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="ninjagoCanvas" width="800" height="400"></canvas>
-    </div>
-    <script>
-        const canvas = document.getElementById('ninjagoCanvas');
-        const ctx = canvas.getContext('2d');
+<canvas id="pixelArtCanvas" width="200" height="200"></canvas>
+<script>
+const canvas = document.getElementById('pixelArtCanvas');
+const ctx = canvas.getContext('2d');
 
-        const jayImage = new Image();
-        const kaiImage = new Image();
-        jayImage.src = '/mnt/data/IMG_5353.png';  // Use the uploaded image for Jay
-        kaiImage.src = 'https://example.com/path-to-kai-image.png';  // Replace with actual path for Kai's image
+// Define the pixel size
+const pixelSize = 10;
 
-        const characters = {
-            jay: { x: 100, y: 300, width: 50, height: 50, state: 'idle', frame: 0 },
-            kai: { x: 600, y: 300, width: 50, height: 50, state: 'idle', frame: 0 }
-        };
+// Define ninjas
+const ninjas = [
+    { name: 'Jay', colorScheme: { blue: '#0000FF', yellow: '#FFFF00', black: '#000000', white: '#FFFFFF' }, moveset: 'Lightning Strike' },
+    { name: 'Kai', colorScheme: { red: '#FF0000', yellow: '#FFFF00', black: '#000000', white: '#FFFFFF' }, moveset: 'Fire Spin' },
+    { name: 'Zane', colorScheme: { silver: '#C0C0C0', blue: '#0000FF', black: '#000000', white: '#FFFFFF' }, moveset: 'Ice Blast' },
+    { name: 'Cole', colorScheme: { black: '#000000', brown: '#8B4513', white: '#FFFFFF' }, moveset: 'Earthquake' }
+];
 
-        let keys = {};
+// Function to draw a pixel
+function drawPixel(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+}
 
-        function drawCharacter(character, image) {
-            ctx.drawImage(image, character.x, character.y, character.width, character.height);
-        }
+// Draw a ninja
+function drawNinja(ninja) {
+    const colorScheme = ninja.colorScheme;
 
-        function updateCharacter(character) {
-            switch (character.state) {
-                case 'idle':
-                    // Idle state logic
-                    break;
-                case 'walking':
-                    character.x += 2;
-                    break;
-                case 'punching':
-                    // Punching logic
-                    break;
-                case 'spinjitzu':
-                    character.frame += 1;
-                    character.x += Math.sin(character.frame * 0.1) * 2;
-                    break;
-                case 'jump':
-                    character.y -= Math.sin(character.frame * 0.1) * 5;
-                    break;
-                case 'lightning':
-                    // Lightning logic
-                    break;
-                case 'fire':
-                    // Fire logic
-                    break;
-            }
-        }
+    // Head
+    drawPixel(4, 1, colorScheme.blue);
+    drawPixel(5, 1, colorScheme.blue);
+    drawPixel(3, 2, colorScheme.blue);
+    drawPixel(6, 2, colorScheme.blue);
+    drawPixel(2, 3, colorScheme.blue);
+    drawPixel(7, 3, colorScheme.blue);
+    drawPixel(2, 4, colorScheme.blue);
+    drawPixel(7, 4, colorScheme.blue);
+    drawPixel(2, 5, colorScheme.blue);
+    drawPixel(7, 5, colorScheme.blue);
+    drawPixel(3, 6, colorScheme.blue);
+    drawPixel(6, 6, colorScheme.blue);
+    drawPixel(4, 7, colorScheme.blue);
+    drawPixel(5, 7, colorScheme.blue);
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Eyes
+    drawPixel(4, 2, colorScheme.white);
+    drawPixel(5, 2, colorScheme.white);
+    drawPixel(4, 3, colorScheme.black);
+    drawPixel(5, 3, colorScheme.black);
 
-            for (let characterKey in characters) {
-                updateCharacter(characters[characterKey]);
-                drawCharacter(characters[characterKey], characterKey === 'jay' ? jayImage : kaiImage);
-            }
+    // Mouth
+    drawPixel(4, 4, colorScheme.yellow);
+    drawPixel(5, 4, colorScheme.yellow);
+    drawPixel(3, 5, colorScheme.yellow);
+    drawPixel(6, 5, colorScheme.yellow);
+}
 
-            requestAnimationFrame(animate);
-        }
+// Clear the canvas
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-        document.addEventListener('keydown', (event) => {
-            keys[event.key] = true;
-            handleInput();
-        });
+// Draw a ninja when the page loads
+drawNinja(ninjas[0]);
 
-        document.addEventListener('keyup', (event) => {
-            keys[event.key] = false;
-        });
+// Handle keyboard input for moving the ninja
+document.addEventListener('keydown', function(event) {
+    switch(event.key) {
+        case 'ArrowUp':
+            moveNinja('up');
+            break;
+        case 'ArrowDown':
+            moveNinja('down');
+            break;
+        case 'ArrowLeft':
+            moveNinja('left');
+            break;
+        case 'ArrowRight':
+            moveNinja('right');
+            break;
+    }
+});
 
-        function handleInput() {
-            if (keys['ArrowRight']) characters.jay.state = 'walking';
-            else if (keys['ArrowUp']) characters.jay.state = 'jump';
-            else if (keys['p']) characters.jay.state = 'punching';
-            else if (keys['s']) characters.jay.state = 'spinjitzu';
-            else if (keys['l']) characters.jay.state = 'lightning';
-            else characters.jay.state = 'idle';
-        }
+// Move the ninja
+function moveNinja(direction) {
+    // Add code here to move the ninja
+}
 
-        function aiLogic() {
-            const kai = characters.kai;
-            const jay = characters.jay;
-
-            // Simple AI logic for Kai
-            if (kai.x > jay.x + 50) {
-                kai.state = 'walking';
-                kai.x -= 2;
-            } else if (kai.x < jay.x - 50) {
-                kai.state = 'walking';
-                kai.x += 2;
-            } else {
-                kai.state = 'punching';
-            }
-
-            setTimeout(aiLogic, 1000 / 30);  // 30 times per second
-        }
-
-        jayImage.onload = function() {
-            kaiImage.onload = function() {
-                animate();
-                aiLogic();
-            };
-        };
-    </script>
+// Handle attacks
+function attack(ninja) {
+    // Add code here to perform the ninja's unique moveset
+}
+</script>
 </body>
 </html>
