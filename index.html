@@ -1444,10 +1444,22 @@ let tapStartY = 0;
 let tapEndX = 0;
 let tapEndY = 0;
 
+let startX, startY, endX, endY;
+
 function handleTapStart(event) {
     if (event.type === 'touchstart') {
         startX = event.touches[0].clientX;
         startY = event.touches[0].clientY;
+        
+        // Create a synthetic click event
+        const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+
+        // Dispatch the click event on the touched element
+        event.target.dispatchEvent(clickEvent);
     } else if (event.type === 'mousedown') {
         startX = event.clientX;
         startY = event.clientY;
@@ -1478,10 +1490,12 @@ function handleTapEnd(event) {
         }
     }
 }
+
 canvas.addEventListener('touchstart', handleTapStart);
 canvas.addEventListener('touchend', handleTapEnd);
 canvas.addEventListener('mousedown', handleTapStart);
 canvas.addEventListener('mouseup', handleTapEnd);
+
 
 // Drawing function to draw the laser with fade effect
 function drawLaser() {
