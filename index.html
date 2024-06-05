@@ -1478,20 +1478,19 @@ function handleTapEnd(event) {
         }
     }
 }
-if (firstControlSchemeSet) {
-    // Add event listeners
+function activateLaser(){
     canvas.addEventListener('touchstart', handleTapStart);
     canvas.addEventListener('touchend', handleTapEnd);
-    canvas.addEventListener('mousedown', handleTapStart);
+    canvas.addEventListener('mousedown', handleTapStart); 
     canvas.addEventListener('mouseup', handleTapEnd);
-} else {
-    // Remove event listeners
-    canvas.removeEventListener('touchstart', handleTapStart);
+}
+        function deactivateLaser(){
+                canvas.removeEventListener('touchstart', handleTapStart);
     canvas.removeEventListener('touchend', handleTapEnd);
     canvas.removeEventListener('mousedown', handleTapStart);
     canvas.removeEventListener('mouseup', handleTapEnd);
-}
 
+        }
 // Drawing function to draw the laser with fade effect
 function drawLaser() {
     if (laser.isShooting) {
@@ -2815,6 +2814,7 @@ obstacles.forEach((obstacle, obstacleIndex) => {
 
 if ((controltype === 'set' || controltype === 'arrow') && controltype !== 'mobile') {
     // Handle arrow key presses
+    activateLaser()
     document.addEventListener('keydown', event => {
         // If a control scheme is already set, return early
         if (firstControlSchemeSet && controltype !== 'arrow') return;
@@ -2856,6 +2856,7 @@ if ((controltype === 'set' || controltype === 'arrow') && controltype !== 'mobil
 }
 
 if ((controltype === 'set' || controltype === 'mobile') && controltype !== 'arrow') {
+   activateLaser()
     if (!isPaused) {
         // Handle touch events for mobile controls
         let touchStartX = 0;
