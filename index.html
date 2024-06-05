@@ -2702,12 +2702,20 @@ function animateExplosion() {
             resizeCanvasHeight();
             update();
             draw();
-            if (firstControlSchemeSet){
-canvas.addEventListener('touchstart', handleTapStart);
-canvas.addEventListener('touchend', handleTapEnd);
-canvas.addEventListener('mousedown', handleTapStart);
-canvas.addEventListener('mouseup', handleTapEnd);
+if (firstControlSchemeSet) {
+    // Add event listeners
+    canvas.addEventListener('touchstart', handleTapStart);
+    canvas.addEventListener('touchend', handleTapEnd);
+    canvas.addEventListener('mousedown', handleTapStart);
+    canvas.addEventListener('mouseup', handleTapEnd);
+} else {
+    // Remove event listeners
+    canvas.removeEventListener('touchstart', handleTapStart);
+    canvas.removeEventListener('touchend', handleTapEnd);
+    canvas.removeEventListener('mousedown', handleTapStart);
+    canvas.removeEventListener('mouseup', handleTapEnd);
 }
+
             if (isGravityWellActive === true && wells.length !== 0){
             checkDistance(snake)
             }
