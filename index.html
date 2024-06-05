@@ -1608,7 +1608,9 @@ if (kamekappears === true){
 }
         // After 5 seconds, reset the shooting state and fade out the laser
 
-        
+        setTimeout(() => {
+    isShooting = false;
+     }, 5000);
             isShooting = false;
             charging = true;
         
@@ -1746,7 +1748,10 @@ ctx.fillStyle = 'black';
         // Draw Score
     const scoreDisplay = document.getElementById('scoreDisplay');
     scoreDisplay.innerHTML = `Score: ${score}<br>Lives: ${livecount}`;
-    drawLaser();
+    if(laser.isShooting === true)
+    {
+        drawLaser();
+    }
 }
 
 function drawInvincibilityAura(colorName) {
