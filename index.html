@@ -1460,8 +1460,8 @@ function handleTapStart(event) {
 
 function handleTapEnd(event) {
     if (event.type === 'touchend') { 
-        endX = event.changedTouches ? event.changedTouches[0].clientX : event.clientX;
-        endY = event.changedTouches ? event.changedTouches[0].clientY : event.clientY;
+        endX = event.clientX;
+        endY = event.clientY;
     } else if (event.type === 'mouseup') {
         endX = event.clientX;
         endY = event.clientY;
