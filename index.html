@@ -1483,11 +1483,6 @@ function handleTapEnd(event) {
     }
 }
 
-canvas.addEventListener('touchstart', handleTapStart);
-canvas.addEventListener('touchend', handleTapEnd);
-canvas.addEventListener('mousedown', handleTapStart);
-canvas.addEventListener('mouseup', handleTapEnd);
-
 // Drawing function to draw the laser with fade effect
 function drawLaser() {
     if (laser.isShooting) {
@@ -2707,6 +2702,12 @@ function animateExplosion() {
             resizeCanvasHeight();
             update();
             draw();
+            if (firstControlSchemeSet){
+canvas.addEventListener('touchstart', handleTapStart);
+canvas.addEventListener('touchend', handleTapEnd);
+canvas.addEventListener('mousedown', handleTapStart);
+canvas.addEventListener('mouseup', handleTapEnd);
+}
             if (isGravityWellActive === true && wells.length !== 0){
             checkDistance(snake)
             }
