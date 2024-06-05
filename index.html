@@ -1439,41 +1439,41 @@ const laser = {
 };
 
 // Handle tap events for shooting the laser
-let tapStartX = 0;
-let tapStartY = 0;
-let tapEndX = 0;
-let tapEndY = 0;
+let LasertapStartX = 0;
+let LasertapStartY = 0;
+let LasertapEndX = 0;
+let LasertapEndY = 0;
 
 function handleLaserTapStart(event) {
     if (event.type === 'touchstart') {
-        startX = event.touches[0].clientX;
-        startY = event.touches[0].clientY;
+        LasertapStartX = event.touches[0].clientX;
+        LasertapStartY = event.touches[0].clientY;
     } else if (event.type === 'mousedown') {
-        startX = event.clientX;
-        startY = event.clientY;
+        LasertapStartX = event.clientX;
+        LasertapStartY = event.clientY;
     }
 }
 
 function handleLaserTapEnd(event) {
     if (event.type === 'touchend') {
-        endX = event.changedTouches[0].clientX;
-        endY = event.changedTouches[0].clientY;
+        LasertapEndX = event.changedTouches[0].clientX;
+        LasertapEndY = event.changedTouches[0].clientY;
     } else if (event.type === 'mouseup') {
-        endX = event.clientX;
-        endY = event.clientY;
+        LasertapEndX = event.clientX;
+        LasertapEndY = event.clientY;
     }
 
     // Calculate the distance between start and end points
-    const deltaX = Math.abs(endX - startX);
-    const deltaY = Math.abs(endY - startY);
+    const deltaX = Math.abs(LasertapEndX - LasertapStartX);
+    const deltaY = Math.abs(LasertapEndY - LasertapStartY);
 
     // If the distance is small enough, treat it as a tap/click
     if (deltaX < 10 && deltaY < 10) {
         // Only shoot the laser if it's not already shooting
         if (!laser.isShooting) {
             const canvasRect = canvas.getBoundingClientRect();
-            const canvasX = endX - canvasRect.left;
-            const canvasY = endY - canvasRect.top;
+            const canvasX = LasertapEndX - canvasRect.left;
+            const canvasY = LasertapEndY - canvasRect.top;
             shootLaser(canvasX, canvasY);
         }
     }
