@@ -99,11 +99,18 @@
     const rowIndex = parseInt(event.target.dataset.rowIndex);
     const colIndex = parseInt(event.target.dataset.colIndex);
 
+    const miniBoardIndex = determineMiniBoard(rowIndex, colIndex);
+    const currentMiniBoard = boardStates[miniBoardIndex];
+
+    if (currentMiniBoard.every(row => row.every(cell => cell !== ''))) {
+      if (!checkWin(currentMiniBoard)) {
+        return; // Mini-board is full and no winner, can't play here
+      }
+    }
+
     if (boardStates[rowIndex][colIndex] === '') {
       boardStates[rowIndex][colIndex] = currentPlayer;
       event.target.innerText = currentPlayer;
-
-      const miniBoardIndex = determineMiniBoard(rowIndex, colIndex);
       
       // Check for a win on the current mini-board
       if (checkWin(boardStates[miniBoardIndex])) {
@@ -128,11 +135,33 @@
 
       // Switch players
       currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+
+      // If the current player is the AI (O), make its move
+      if (currentPlayer === 'O' && !gameEnded) {
+        setTimeout(makeAIMove, 500); // Delay for better visualization
+      }
     }
   }
 
   function determineMiniBoard(rowIndex, colIndex) {
     return Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+  }
+
+  function makeAIMove() {
+    let availableMoves = [];
+    // Collect available moves
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (boardStates[i][j] === '') {
+          availableMoves.push({ row: i, col: j });
+        }
+      }
+    }
+    // Randomly select a move
+    const randomIndex = Math.floor(Math.random() * availableMoves.length);
+    const { row, col } = availableMoves[randomIndex];
+    const cell = superBoard.querySelector(`[data-row-index="${row}"][data-col-index="${col}"]`);
+    cell.click();
   }
 
   function checkWin(board) {
@@ -162,9 +191,11 @@
       cell.innerText = '';
       cell.classList.remove('won', 'draw');
     });
-  }
-
+ 
   resetButton.addEventListener('click', reset);
+}
+
+resetButton.addEventListener('click', reset);
 </script>
 </body>
 </html>
