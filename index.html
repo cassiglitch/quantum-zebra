@@ -1,191 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ninjago Fighting Game</title>
-    <style>
-        /* CSS styles */
-        .character {
-            width: 50px;
-            height: 50px;
-            position: absolute;
-        }
-        #character1 {
-            background-color: blue; /* Jay's color */
-            left: 50px;
-            top: 200px;
-        }
-
-        #character2 {
-            background-color: red; /* Kai's color */
-            left: 300px;
-            top: 200px;
-        }
-
-        #character3 {
-            background-color: black; /* Cole's color */
-            left: 550px;
-            top: 200px;
-        }
-
-        #character4 {
-            background-color: green; /* Lloyd's color */
-            left: 800px;
-            top: 200px;
-        }
-
-        #character5 {
-            background-color: orange; /* Nya's color */
-            left: 1050px;
-            top: 200px;
-        }
-
-        #character6 {
-            background-color: purple; /* Zane's color */
-            left: 1300px;
-            top: 200px;
-        }
-
-        #character7 {
-            background-color: gray; /* Morro's color */
-            left: 1550px;
-            top: 200px;
-        /* You can add more styles here as needed */
-
-        .spinjitzu {
-            /* Add spinjitzu animation styles here */
-            animation: spin 1s infinite linear;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Tic Tac Toe</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  
+  .board {
+    display: inline-grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-gap: 2px;
+    margin-bottom: 20px;
+  }
+  
+  .cell {
+    width: 40px;
+    height: 40px;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    cursor: pointer;
+  }
+  
+  .message {
+    font-size: 1.2em;
+    margin-top: 10px;
+  }
+  
+  button {
+    font-size: 1em;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="jay" class="character"></div>
-        <div id="kai" class="character"></div>
-        <div id="cole" class="character"></div>
-        <div id="lloyd" class="character"></div>
-        <div id="nya" class="character"></div>
-        <div id="zane" class="character"></div>
-        <div id="morro" class="character"></div>
-    </div>
+<h1>Super Tic Tac Toe</h1>
+<div id="boards" class="board">
+  <!-- Outer grid -->
+  <!-- Individual Tic Tac Toe boards will be dynamically generated here -->
+</div>
+<button id="resetButton">Reset</button>
+<div id="message" class="message"></div>
 
-    <script>
-        // JavaScript code
-        const characters = document.querySelectorAll('.character');
-        const spinjitzuCooldown = 5000; // Spinjitzu cooldown time in milliseconds
-        const deathTime = 1000; // Time to wait after a character dies in milliseconds
+<script>
+  const boardsContainer = document.getElementById('boards');
+  const resetButton = document.getElementById('resetButton');
+  const message = document.getElementById('message');
 
-        // Movesets for each character
-        const movesets = {
-            jay: {
-                left: 'ArrowLeft',
-                right: 'ArrowRight',
-                spinjitzu: 'ArrowUp'
-            },
-            kai: {
-                left: 'a',
-                right: 'd',
-                spinjitzu: 'w'
-            },
-            cole: {
-                left: 'j',
-                right: 'l',
-                spinjitzu: 'i'
-            },
-            lloyd: {
-                left: 'f',
-                right: 'h',
-                spinjitzu: 'r'
-            },
-            nya: {
-                left: 'v',
-                right: 'b',
-                spinjitzu: 'n'
-            },
-            zane: {
-                left: 'c',
-                right: 'm',
-                spinjitzu: 'x'
-            },
-            morro: {
-                left: '1',
-                right: '3',
-                spinjitzu: '2'
-            }
-        };
+  // Create the super Tic Tac Toe boards
+  for (let i = 0; i < 9; i++) {
+    const board = document.createElement('div');
+    board.classList.add('board');
+    for (let j = 0; j < 9; j++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.dataset.boardIndex = i;
+      cell.dataset.cellIndex = j;
+      cell.addEventListener('click', makeMove);
+      board.appendChild(cell);
+    }
+    boardsContainer.appendChild(board);
+  }
 
-        // Health status for each character
-        const health = {
-            jay: 100,
-            kai: 100,
-            cole: 100,
-            lloyd: 100,
-            nya: 100,
-            zane: 100,
-            morro: 100
-            // Initialize health for other characters here
-        };
+  let currentPlayer = 'X';
+  let gameEnded = false;
+  let boardStates = Array(9).fill().map(() => Array(9).fill(''));
 
-        // Cooldown status for Spinjitzu
-        let spinjitzuCooldownActive = false;
+  const winningCombos = [
+    // Rows
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [9, 10, 11], [12, 13, 14], [15, 16, 17],
+    [18, 19, 20], [21, 22, 23], [24, 25, 26],
+    // Columns
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [9, 12, 15], [10, 13, 16], [11, 14, 17],
+    [18, 21, 24], [19, 22, 25], [20, 23, 26],
+    // Diagonals
+    [0, 4, 8], [2, 4, 6],
+    [9, 13, 17], [11, 13, 15],
+    [18, 22, 26], [20, 22, 24]
+  ];
 
-        document.addEventListener('keydown', (event) => {
-            const key = event.key;
-            const step = 10; // Adjust movement step as needed
-            
-            // Check if spinjitzu cooldown is active
-            if (spinjitzuCooldownActive) return;
+  function makeMove(event) {
+    if (gameEnded) return;
 
-            // Loop through characters
-            characters.forEach((character, index) => {
-                const moveset = movesets[character.id];
+    const boardIndex = parseInt(event.target.dataset.boardIndex);
+    const cellIndex = parseInt(event.target.dataset.cellIndex);
 
-                // Move left
-                if (key === moveset.left) {
-                    moveCharacter(character, -step);
-                }
-                // Move right
-                else if (key === moveset.right) {
-                    moveCharacter(character, step);
-                }
-                // Spinjitzu
-                else if (key === moveset.spinjitzu) {
-                    performSpinjitzu(character);
-                }
-            });
-        });
+    if (boardStates[boardIndex][cellIndex] === '') {
+      boardStates[boardIndex][cellIndex] = currentPlayer;
+      event.target.innerText = currentPlayer;
+      
+      // Check for a win on the current board
+      if (checkWin(boardStates[boardIndex])) {
+        // Mark the winning board
+        boardsContainer.children[boardIndex].classList.add('winner');
+      } else if (checkDraw(boardStates[boardIndex])) {
+        // If the board is full but no winner, mark it as a draw
+        boardsContainer.children[boardIndex].classList.add('draw');
+      }
 
-        function moveCharacter(character, step) {
-            const currentLeft = parseInt(character.style.left) || 0;
-            character.style.left = `${currentLeft + step}px`;
-        }
+      // Check for a win on the overall board
+      if (checkWin(boardStates) !== '') {
+        message.innerText = `${currentPlayer} wins the game!`;
+        gameEnded = true;
+      } else if (checkDraw(boardStates)) {
+        message.innerText = 'It\'s a draw!';
+        gameEnded = true;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        message.innerText = `Player ${currentPlayer}'s turn`;
+      }
+    }
+  }
 
-        function performSpinjitzu(character) {
-            spinjitzuCooldownActive = true;
-            character.classList.add('spinjitzu'); // Apply spinjitzu animation
+  function checkWin(board) {
+    return winningCombos.some(combo => {
+      return combo.every(index => {
+        return board[index] === currentPlayer;
+      });
+    });
+  }
 
-            setTimeout(() => {
-                character.classList.remove('spinjitzu'); // Remove spinjitzu animation
-                spinjitzuCooldownActive = false;
-            }, spinjitzuCooldown);
-        }
+  function checkDraw(board) {
+    return board.every(cell => {
+      return cell !== '';
+    });
+  }
 
-        function die(character) {
-            character.style.opacity = 0.5; // Reduce opacity to indicate character's death
-            setTimeout(() => {
-                character.style.display = 'none'; // Hide character after death
-            }, deathTime);
-        }
-    </script>
+  function reset() {
+    currentPlayer = 'X';
+    gameEnded = false;
+    boardStates = Array(9).fill().map(() => Array(9).fill(''));
+    message.innerText = `Player ${currentPlayer}'s turn`;
+    boardsContainer.querySelectorAll('.board').forEach(board => {
+      board.querySelectorAll('.cell').forEach(cell => {
+        cell.innerText = '';
+        cell.classList.remove('winner', 'draw');
+      });
+    });
+  }
+
+  resetButton.addEventListener('click', reset);
+</script>
 </body>
 </html>
