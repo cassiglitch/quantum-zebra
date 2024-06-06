@@ -3,265 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ninjago Platform Fighter</title>
+    <title>Ninjago Platform Fighting Game</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
             overflow: hidden;
-            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
         }
 
-        canvas {
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+        }
+
+        .character {
+            position: absolute;
+            width: 50px;
+            height: 100px;
+            color: white;
+            text-align: center;
+            line-height: 100px;
+            border: 2px solid #fff;
+            display: none;
+        }
+
+        .character.jay { background-color: blue; }
+        .character.kai { background-color: red; }
+        .character.cole { background-color: brown; }
+        .character.zane { background-color: lightblue; }
+        .character.lloyd { background-color: green; }
+        .character.nya { background-color: darkblue; }
+        .character.morro { background-color: grey; }
+
+        .effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            opacity: 0.8;
+            display: none;
+        }
+
+        .effect.jay { background-color: lightblue; }
+        .effect.kai { background-color: orange; }
+        .effect.cole { background-color: darkbrown; }
+        .effect.zane { background-color: white; }
+        .effect.lloyd { background-color: lime; }
+        .effect.nya { background-color: navy; }
+        .effect.morro { background-color: lightgrey; }
+
+        #platform {
+            position: absolute;
+            width: 80%;
+            height: 20px;
+            background-color: grey;
+            left: 10%;
+            bottom: 10%;
+        }
+
+        #character-select {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+        }
+
+        #character-select button {
             display: block;
-            margin: auto;
-            border: 1px solid #000;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .hidden { display: none; }
+
+        .spinjitzu {
+            animation: spinjitzu 1s linear infinite;
+        }
+
+        @keyframes spinjitzu {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
+    <div id="character-select">
+        <h1>Select Your Character</h1>
+        <button onclick="selectCharacter('jay')">Jay</button>
+        <button onclick="selectCharacter('kai')">Kai</button>
+        <button onclick="selectCharacter('cole')">Cole</button>
+        <button onclick="selectCharacter('zane')">Zane</button>
+        <button onclick="selectCharacter('lloyd')">Lloyd</button>
+        <button onclick="selectCharacter('nya')">Nya</button>
+        <button onclick="selectCharacter('morro')">Morro</button>
+    </div>
+    <div id="game-container">
+        <div id="jay" class="character jay">Jay</div>
+        <div id="kai" class="character kai">Kai</div>
+        <div id="cole" class="character cole">Cole</div>
+        <div id="zane" class="character zane">Zane</div>
+        <div id="lloyd" class="character lloyd">Lloyd</div>
+        <div id="nya" class="character nya">Nya</div>
+        <div id="morro" class="character morro">Morro</div>
+        <div id="platform"></div>
+    </div>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Define ninja powers
-        const ninjaPowers = {
-            "Kai": "Fire",
-            "Jay": "Lightning",
-            "Cole": "Earth",
-            "Zane": "Ice",
-            "Lloyd": "Energy",
-            "Nya": "Water",
-            "Morro": "Wind"
+        const characters = {
+            jay: { element: document.getElementById('jay'), position: { left: 20, bottom: 20 }, power: 'lightning', color: 'blue' },
+            kai: { element: document.getElementById('kai'), position: { left: 70, bottom: 20 }, power: 'fire', color: 'red' },
+            cole: { element: document.getElementById('cole'), position: { left: 20, bottom: 20 }, power: 'earth', color: 'brown' },
+            zane: { element: document.getElementById('zane'), position: { left: 70, bottom: 20 }, power: 'ice', color: 'lightblue' },
+            lloyd: { element: document.getElementById('lloyd'), position: { left: 20, bottom: 20 }, power: 'energy', color: 'green' },
+            nya: { element: document.getElementById('nya'), position: { left: 70, bottom: 20 }, power: 'water', color: 'darkblue' },
+            morro: { element: document.getElementById('morro'), position: { left: 20, bottom: 20 }, power: 'wind', color: 'grey' }
         };
 
-        // Define move attributes for each move
-        const moveAttributes = {
-            "Fire Spin": { damage: 20, range: 50, cooldown: 2000, endLag: 500 },
-            "Fireball": { damage: 30, range: 100, cooldown: 3000, endLag: 600 },
-            "Dragon Kick": { damage: 40, range: 30, cooldown: 4000, endLag: 700 },
-            // Define attributes for other moves here
-        };
+        let selectedCharacter = null;
 
-        // Define character attributes
-        const characterAttributes = {
-            "Kai": { weight: 80, speed: 7 },
-            "Jay": { weight: 75, speed: 8 },
-            "Cole": { weight: 90, speed: 6 },
-            "Zane": { weight: 70, speed: 9 },
-            "Lloyd": { weight: 85, speed: 7 },
-            "Nya": { weight: 75, speed: 8 },
-            "Morro": { weight: 80, speed: 7 }
-        };
-
-        // Player object
-        const player = {
-            x: 50,
-            y: canvas.height - 150,
-            width: 50,
-            height: 50,
-            color: '#ff0000',
-            speedX: 0,
-            speedY: 0,
-            acceleration: 0.5,
-            maxSpeed: 5,
-            weight: null, // Will be assigned based on selection
-            power: null, // Will be assigned based on selection
-            moveset: null, // Will be assigned based on selection
-            isAttacking: false,
-            isPossessed: false,
-            currentMove: null,
-            moveCooldown: 0,
-            endLag: 0,
-            damage: 0,
-            maxDamage: 999,
-            knockback: 0
-        };
-
-        // Enemy object
-        const enemy = {
-            x: canvas.width - 100,
-            y: canvas.height - 150,
-            width: 50,
-            height: 50,
-            color: '#00ff00',
-            speedX: 0,
-            speedY: 0,
-            acceleration: 0.5,
-            maxSpeed: 5,
-            weight: null, // Will be assigned based on selection
-            power: null, // Will be assigned based on selection
-            moveset: null, // Will be assigned based on selection
-            isAttacking: false,
-            isPossessed: false,
-            currentMove: null,
-            moveCooldown: 0,
-            endLag: 0,
-            damage: 0,
-            maxDamage: 999,
-            knockback: 0
-        };
-
-        // Spinjitzu object
-        const spinjitzu = {
-            x: 0,
-            y: 0,
-            radius: 50,
-            color: 'rgba(255, 165, 0, 0.5)',
-            active: false,
-            duration: 3000, // Duration in milliseconds
-            startTime: 0
-        };
-
-        // Unlock Morro
-        let unlockedMorro = false;
-
-        // Player object for Morro
-        const morroPlayer = {
-            x: 50,
-            y: canvas.height - 150,
-            width: 50,
-            height: 50,
-            color: '#800080', // Purple color for Morro
-            speedX: 0,
-            speedY: 0,
-            acceleration: 0.5,
-            maxSpeed: 5,
-            weight: 80,
-            power: ninjaPowers["Morro"], // Morro's power is Wind
-            moveset: moveSets["Morro"],
-            isAttacking: false,
-            isPossessed: true,
-            currentMove: null,
-            moveCooldown: 0,
-            endLag: 0,
-            damage: 0,
-            maxDamage: 999,
-            knockback: 0
-        };
-
-        // Select screen
-        function selectScreen() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "30px Arial";
-            ctx.fillStyle = "black";
-            ctx.fillText("Select Your Ninja:", canvas.width / 2 - 150, 50);
-
-            let y = 100;
-            for (const ninja in ninjaPowers) {
-                ctx.fillText(ninja, canvas.width / 2 - 50, y);
-                y += 50;
-            }
+        function selectCharacter(name) {
+            document.getElementById('character-select').classList.add('hidden');
+            const character = characters[name];
+            character.element.style.display = 'block';
+            selectedCharacter = character;
         }
 
-        // Event listener for select screen
-        let selectedNinja = null;
-        document.addEventListener('click', (event) => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            let y = 100;
-            for (const ninja in ninjaPowers) {
-                if (mouseX > canvas.width / 2 - 50 && mouseX < canvas.width / 2 + 50 && mouseY > y - 30 && mouseY < y) {
-                    selectedNinja = ninja;
-                    break;
-                }
-                y += 50;
-            }
-
-            if (selectedNinja) {
-                console.log(`Selected Ninja: ${selectedNinja}`);
-                startGame();
-            }
-        });
-
-        // Start game function
-        function startGame() {
-            console.log("Game started!");
-            // Initialize player and enemy positions
-            player.x = 50;
-            enemy.x = canvas.width - 100;
-
-            // Assign powers, movesets, weight, and speed based on selection
-            player.power = ninjaPowers[selectedNinja];
-            player.moveset = moveSets[selectedNinja];
-            player.weight = characterAttributes[selectedNinja].weight;
-
-            enemy.power = ninjaPowers[selectedNinja === "Morro" ? "Lloyd" : selectedNinja
-            ];
-            enemy.moveset = moveSets[selectedNinja === "Morro" ? "Lloyd" : selectedNinja];
-            enemy.weight = characterAttributes[selectedNinja === "Morro" ? "Lloyd" : selectedNinja].weight;
-        }
-
-        // Handle player movement
-        function handlePlayerMovement() {
-            // Horizontal movement
-            if (keyState['ArrowLeft']) {
-                player.speedX = -player.maxSpeed;
-            } else if (keyState['ArrowRight']) {
-                player.speedX = player.maxSpeed;
-            } else {
-                player.speedX = 0;
-            }
-
-            // Vertical movement (for jumping)
-            if (keyState['ArrowUp'] && player.y === canvas.height - player.height) {
-                player.speedY = -10; // Jumping velocity
-            }
-
-            // Apply acceleration and limit speed
-            player.speedX += player.acceleration;
-            player.speedX = Math.min(Math.max(player.speedX, -player.maxSpeed), player.maxSpeed);
-
-            // Apply speed to position
-            player.x += player.speedX;
-            player.y += player.speedY;
-
-            // Apply gravity
-            player.speedY += 0.5;
-            player.speedY = Math.min(player.speedY, 10); // Terminal velocity
-        }
-
-        // Handle enemy movement (AI)
-        function handleEnemyMovement() {
-            // Implement enemy movement logic here
-        }
-
-        // Event listeners for player controls
-        const keyState = {};
         document.addEventListener('keydown', (event) => {
-            keyState[event.key] = true;
+            if (!selectedCharacter) return;
+
+            const { element, position, power } = selectedCharacter;
+            if (event.key === 'a') moveCharacter(element, position, 'left');
+            if (event.key === 'd') moveCharacter(element, position, 'right');
+            if (event.key === 'w') moveCharacter(element, position, 'up');
+            if (event.key === 's') moveCharacter(element, position, 'down');
+
+            // Spinjitzu using 'j' key
+            if (event.key === 'j') performSpinjitzu(element);
+
+            // Elemental power using 'q' key
+            if (event.key === 'q') performElementalPower(element, power);
         });
 
-        document.addEventListener('keyup', (event) => {
-            keyState[event.key] = false;
-        });
+        function moveCharacter(character, position, direction) {
+            if (direction === 'left') position.left -= 1;
+            if (direction === 'right') position.left += 1;
+            if (direction === 'up') position.bottom += 1;
+            if (direction === 'down') position.bottom -= 1;
 
-        // Update game objects
-        function update() {
-            handlePlayerMovement();
-            handleEnemyMovement();
-            // Implement other updates here
+            character.style.left = position.left + '%';
+            character.style.bottom = position.bottom + '%';
         }
 
-        // Render game objects
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Implement drawing logic here
+        function performSpinjitzu(character) {
+            character.classList.add('spinjitzu');
+            setTimeout(() => {
+                character.classList.remove('spinjitzu');
+            }, 1000);
         }
 
-        // Game loop
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
+        function performElementalPower(character, power) {
+            const effect = document.createElement('div');
+            effect.className = `effect ${power}`;
+            effect.style.left = character.style.left;
+            effect.style.bottom = character.style.bottom;
+            effect.style.display = 'block';
 
-        // Start the game loop
-        gameLoop();
+            document.getElementById('game-container').appendChild(effect);
+
+            setTimeout(() => {
+                effect.style.display = 'none';
+                document.getElementById('game-container').removeChild(effect);
+            }, 1000);
+        }
     </script>
 </body>
 </html>
