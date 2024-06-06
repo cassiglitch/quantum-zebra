@@ -10,9 +10,10 @@
     text-align: center;
   }
   
-  .board {
-    display: inline-grid;
+  .super-board {
+    display: grid;
     grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
     grid-gap: 2px;
     margin-bottom: 20px;
   }
@@ -38,35 +39,39 @@
     padding: 10px 20px;
     cursor: pointer;
   }
+
+  .won {
+    background-color: #9acd32; /* Green */
+  }
+
+  .draw {
+    background-color: #ffd700; /* Yellow */
+  }
 </style>
 </head>
 <body>
 <h1>Super Tic Tac Toe</h1>
-<div id="boards" class="board">
-  <!-- Outer grid -->
-  <!-- Individual Tic Tac Toe boards will be dynamically generated here -->
+<div id="superBoard" class="super-board">
+  <!-- Super Tic Tac Toe grid -->
 </div>
 <button id="resetButton">Reset</button>
 <div id="message" class="message"></div>
 
 <script>
-  const boardsContainer = document.getElementById('boards');
+  const superBoard = document.getElementById('superBoard');
   const resetButton = document.getElementById('resetButton');
   const message = document.getElementById('message');
 
-  // Create the super Tic Tac Toe boards
+  // Create the super Tic Tac Toe grid
   for (let i = 0; i < 9; i++) {
-    const board = document.createElement('div');
-    board.classList.add('board');
     for (let j = 0; j < 9; j++) {
       const cell = document.createElement('div');
       cell.classList.add('cell');
-      cell.dataset.boardIndex = i;
-      cell.dataset.cellIndex = j;
+      cell.dataset.rowIndex = i;
+      cell.dataset.colIndex = j;
       cell.addEventListener('click', makeMove);
-      board.appendChild(cell);
+      superBoard.appendChild(cell);
     }
-    boardsContainer.appendChild(board);
   }
 
   let currentPlayer = 'X';
@@ -91,47 +96,60 @@
   function makeMove(event) {
     if (gameEnded) return;
 
-    const boardIndex = parseInt(event.target.dataset.boardIndex);
-    const cellIndex = parseInt(event.target.dataset.cellIndex);
+    const rowIndex = parseInt(event.target.dataset.rowIndex);
+    const colIndex = parseInt(event.target.dataset.colIndex);
 
-    if (boardStates[boardIndex][cellIndex] === '') {
-      boardStates[boardIndex][cellIndex] = currentPlayer;
+    if (boardStates[rowIndex][colIndex] === '') {
+      boardStates[rowIndex][colIndex] = currentPlayer;
       event.target.innerText = currentPlayer;
+
+      const miniBoardIndex = determineMiniBoard(rowIndex, colIndex);
       
-      // Check for a win on the current board
-      if (checkWin(boardStates[boardIndex])) {
-        // Mark the winning board
-        boardsContainer.children[boardIndex].classList.add('winner');
-      } else if (checkDraw(boardStates[boardIndex])) {
-        // If the board is full but no winner, mark it as a draw
-        boardsContainer.children[boardIndex].classList.add('draw');
+      // Check for a win on the current mini-board
+      if (checkWin(boardStates[miniBoardIndex])) {
+        // Mark the winning mini-board
+        event.target.classList.add('won');
+        boardStates[miniBoardIndex] = currentPlayer; // Claim the mini-board
+        // Check for a win on the overall board
+        if (checkWin(boardStates)) {
+          message.innerText = `${currentPlayer} wins the game!`;
+          gameEnded = true;
+        }
+      } else if (checkDraw(boardStates[miniBoardIndex])) {
+        // If the mini-board is full but no winner, mark it as a draw
+        event.target.classList.add('draw');
       }
 
-      // Check for a win on the overall board
-      if (checkWin(boardStates) !== '') {
-        message.innerText = `${currentPlayer} wins the game!`;
-        gameEnded = true;
-      } else if (checkDraw(boardStates)) {
+      // Check for a draw on the overall board
+      if (!gameEnded && checkDraw(boardStates)) {
         message.innerText = 'It\'s a draw!';
         gameEnded = true;
-      } else {
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        message.innerText = `Player ${currentPlayer}'s turn`;
       }
+
+      // Switch players
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
     }
+  }
+
+  function determineMiniBoard(rowIndex, colIndex) {
+    return Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
   }
 
   function checkWin(board) {
     return winningCombos.some(combo => {
       return combo.every(index => {
-        return board[index] === currentPlayer;
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        return board[row][col] === currentPlayer;
       });
     });
   }
 
   function checkDraw(board) {
-    return board.every(cell => {
-      return cell !== '';
+    return board.every(row => {
+      return row.every(cell => {
+        return cell !== '';
+      });
     });
   }
 
@@ -140,11 +158,9 @@
     gameEnded = false;
     boardStates = Array(9).fill().map(() => Array(9).fill(''));
     message.innerText = `Player ${currentPlayer}'s turn`;
-    boardsContainer.querySelectorAll('.board').forEach(board => {
-      board.querySelectorAll('.cell').forEach(cell => {
-        cell.innerText = '';
-        cell.classList.remove('winner', 'draw');
-      });
+    superBoard.querySelectorAll('.cell').forEach(cell => {
+      cell.innerText = '';
+      cell.classList.remove('won', 'draw');
     });
   }
 
