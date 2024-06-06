@@ -3,181 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ninjago Platform Fighting Game</title>
+    <title>Ninjago Fighting Game</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000;
-        }
-
+        /* CSS styles */
         .character {
-            position: absolute;
-            width: 50px;
-            height: 100px;
-            color: white;
-            text-align: center;
-            line-height: 100px;
-            border: 2px solid #fff;
-            display: none;
-        }
-
-        .character.jay { background-color: blue; }
-        .character.kai { background-color: red; }
-        .character.cole { background-color: brown; }
-        .character.zane { background-color: lightblue; }
-        .character.lloyd { background-color: green; }
-        .character.nya { background-color: darkblue; }
-        .character.morro { background-color: grey; }
-
-        .effect {
-            position: absolute;
             width: 50px;
             height: 50px;
-            border-radius: 50%;
-            opacity: 0.8;
-            display: none;
-        }
-
-        .effect.jay { background-color: lightblue; }
-        .effect.kai { background-color: orange; }
-        .effect.cole { background-color: darkbrown; }
-        .effect.zane { background-color: white; }
-        .effect.lloyd { background-color: lime; }
-        .effect.nya { background-color: navy; }
-        .effect.morro { background-color: lightgrey; }
-
-        #platform {
             position: absolute;
-            width: 80%;
-            height: 20px;
-            background-color: grey;
-            left: 10%;
-            bottom: 10%;
+        }
+        #character1 {
+            background-color: blue; /* Jay's color */
+            left: 50px;
+            top: 200px;
         }
 
-        #character-select {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
+        #character2 {
+            background-color: red; /* Kai's color */
+            left: 300px;
+            top: 200px;
         }
 
-        #character-select button {
-            display: block;
-            margin: 10px auto;
-            padding: 10px;
-            font-size: 16px;
+        #character3 {
+            background-color: black; /* Cole's color */
+            left: 550px;
+            top: 200px;
         }
 
-        .hidden { display: none; }
+        #character4 {
+            background-color: green; /* Lloyd's color */
+            left: 800px;
+            top: 200px;
+        }
+
+        #character5 {
+            background-color: orange; /* Nya's color */
+            left: 1050px;
+            top: 200px;
+        }
+
+        #character6 {
+            background-color: purple; /* Zane's color */
+            left: 1300px;
+            top: 200px;
+        }
+
+        #character7 {
+            background-color: gray; /* Morro's color */
+            left: 1550px;
+            top: 200px;
+        /* You can add more styles here as needed */
 
         .spinjitzu {
-            animation: spinjitzu 1s linear infinite;
+            /* Add spinjitzu animation styles here */
+            animation: spin 1s infinite linear;
         }
 
-        @keyframes spinjitzu {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 <body>
-    <div id="character-select">
-        <h1>Select Your Character</h1>
-        <button onclick="selectCharacter('jay')">Jay</button>
-        <button onclick="selectCharacter('kai')">Kai</button>
-        <button onclick="selectCharacter('cole')">Cole</button>
-        <button onclick="selectCharacter('zane')">Zane</button>
-        <button onclick="selectCharacter('lloyd')">Lloyd</button>
-        <button onclick="selectCharacter('nya')">Nya</button>
-        <button onclick="selectCharacter('morro')">Morro</button>
-    </div>
     <div id="game-container">
-        <div id="jay" class="character jay">Jay</div>
-        <div id="kai" class="character kai">Kai</div>
-        <div id="cole" class="character cole">Cole</div>
-        <div id="zane" class="character zane">Zane</div>
-        <div id="lloyd" class="character lloyd">Lloyd</div>
-        <div id="nya" class="character nya">Nya</div>
-        <div id="morro" class="character morro">Morro</div>
-        <div id="platform"></div>
+        <div id="jay" class="character"></div>
+        <div id="kai" class="character"></div>
+        <div id="cole" class="character"></div>
+        <div id="lloyd" class="character"></div>
+        <div id="nya" class="character"></div>
+        <div id="zane" class="character"></div>
+        <div id="morro" class="character"></div>
     </div>
+
     <script>
-        const characters = {
-            jay: { element: document.getElementById('jay'), position: { left: 20, bottom: 20 }, power: 'lightning', color: 'blue' },
-            kai: { element: document.getElementById('kai'), position: { left: 70, bottom: 20 }, power: 'fire', color: 'red' },
-            cole: { element: document.getElementById('cole'), position: { left: 20, bottom: 20 }, power: 'earth', color: 'brown' },
-            zane: { element: document.getElementById('zane'), position: { left: 70, bottom: 20 }, power: 'ice', color: 'lightblue' },
-            lloyd: { element: document.getElementById('lloyd'), position: { left: 20, bottom: 20 }, power: 'energy', color: 'green' },
-            nya: { element: document.getElementById('nya'), position: { left: 70, bottom: 20 }, power: 'water', color: 'darkblue' },
-            morro: { element: document.getElementById('morro'), position: { left: 20, bottom: 20 }, power: 'wind', color: 'grey' }
+        // JavaScript code
+        const characters = document.querySelectorAll('.character');
+        const spinjitzuCooldown = 5000; // Spinjitzu cooldown time in milliseconds
+        const deathTime = 1000; // Time to wait after a character dies in milliseconds
+
+        // Movesets for each character
+        const movesets = {
+            jay: {
+                left: 'ArrowLeft',
+                right: 'ArrowRight',
+                spinjitzu: 'ArrowUp'
+            },
+            kai: {
+                left: 'a',
+                right: 'd',
+                spinjitzu: 'w'
+            },
+            cole: {
+                left: 'j',
+                right: 'l',
+                spinjitzu: 'i'
+            },
+            lloyd: {
+                left: 'f',
+                right: 'h',
+                spinjitzu: 'r'
+            },
+            nya: {
+                left: 'v',
+                right: 'b',
+                spinjitzu: 'n'
+            },
+            zane: {
+                left: 'c',
+                right: 'm',
+                spinjitzu: 'x'
+            },
+            morro: {
+                left: '1',
+                right: '3',
+                spinjitzu: '2'
+            }
         };
 
-        let selectedCharacter = null;
+        // Health status for each character
+        const health = {
+            jay: 100,
+            kai: 100,
+            cole: 100,
+            lloyd: 100,
+            nya: 100,
+            zane: 100,
+            morro: 100
+            // Initialize health for other characters here
+        };
 
-        function selectCharacter(name) {
-            document.getElementById('character-select').classList.add('hidden');
-            const character = characters[name];
-            character.element.style.display = 'block';
-            selectedCharacter = character;
-        }
+        // Cooldown status for Spinjitzu
+        let spinjitzuCooldownActive = false;
 
         document.addEventListener('keydown', (event) => {
-            if (!selectedCharacter) return;
+            const key = event.key;
+            const step = 10; // Adjust movement step as needed
+            
+            // Check if spinjitzu cooldown is active
+            if (spinjitzuCooldownActive) return;
 
-            const { element, position, power } = selectedCharacter;
-            if (event.key === 'a') moveCharacter(element, position, 'left');
-            if (event.key === 'd') moveCharacter(element, position, 'right');
-            if (event.key === 'w') moveCharacter(element, position, 'up');
-            if (event.key === 's') moveCharacter(element, position, 'down');
+            // Loop through characters
+            characters.forEach((character, index) => {
+                const moveset = movesets[character.id];
 
-            // Spinjitzu using 'j' key
-            if (event.key === 'j') performSpinjitzu(element);
-
-            // Elemental power using 'q' key
-            if (event.key === 'q') performElementalPower(element, power);
+                // Move left
+                if (key === moveset.left) {
+                    moveCharacter(character, -step);
+                }
+                // Move right
+                else if (key === moveset.right) {
+                    moveCharacter(character, step);
+                }
+                // Spinjitzu
+                else if (key === moveset.spinjitzu) {
+                    performSpinjitzu(character);
+                }
+            });
         });
 
-        function moveCharacter(character, position, direction) {
-            if (direction === 'left') position.left -= 1;
-            if (direction === 'right') position.left += 1;
-            if (direction === 'up') position.bottom += 1;
-            if (direction === 'down') position.bottom -= 1;
-
-            character.style.left = position.left + '%';
-            character.style.bottom = position.bottom + '%';
+        function moveCharacter(character, step) {
+            const currentLeft = parseInt(character.style.left) || 0;
+            character.style.left = `${currentLeft + step}px`;
         }
 
         function performSpinjitzu(character) {
-            character.classList.add('spinjitzu');
+            spinjitzuCooldownActive = true;
+            character.classList.add('spinjitzu'); // Apply spinjitzu animation
+
             setTimeout(() => {
-                character.classList.remove('spinjitzu');
-            }, 1000);
+                character.classList.remove('spinjitzu'); // Remove spinjitzu animation
+                spinjitzuCooldownActive = false;
+            }, spinjitzuCooldown);
         }
 
-        function performElementalPower(character, power) {
-            const effect = document.createElement('div');
-            effect.className = `effect ${power}`;
-            effect.style.left = character.style.left;
-            effect.style.bottom = character.style.bottom;
-            effect.style.display = 'block';
-
-            document.getElementById('game-container').appendChild(effect);
-
+        function die(character) {
+            character.style.opacity = 0.5; // Reduce opacity to indicate character's death
             setTimeout(() => {
-                effect.style.display = 'none';
-                document.getElementById('game-container').removeChild(effect);
-            }, 1000);
+                character.style.display = 'none'; // Hide character after death
+            }, deathTime);
         }
     </script>
 </body>
