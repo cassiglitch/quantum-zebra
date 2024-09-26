@@ -16,8 +16,8 @@
         }
         canvas {
             position: fixed;
-            top: 0px; /* Adjust the top position as needed */
-            bottom: 0px; /* Adjust the bottom position as needed */
+            top: 0;
+            bottom: 0;
             border: 1px solid #ddd;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow to the canvas */
         }
@@ -69,6 +69,10 @@
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space') {
                 jump();
+            } else if (event.code === 'ArrowLeft') {
+                snake[0].x -= 20; // Move left
+            } else if (event.code === 'ArrowRight') {
+                snake[0].x += 20; // Move right
             }
         });
 
@@ -112,8 +116,16 @@
             obstacles = obstacles.filter(obstacle => obstacle.x + 20 > 0);
         }
 
+        function moveFood() {
+            food.x -= 2; // Move food to the left
+            if (food.x < -20) {
+                food.x = canvas.width + Math.random() * 100; // Reset food to the right
+                food.y = Math.random() * (canvas.height - 20); // Random vertical position
+            }
+        }
+
         function checkCollision() {
-            if (snake[0].y + 20 > canvas.height || snake[0].y < 0) {
+            if (snake[0].y + 20 > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + 20 > canvas.width) {
                 isGameOver = true;
             }
             obstacles.forEach(obstacle => {
@@ -140,6 +152,7 @@
             if (!isGameOver) {
                 updateSnake();
                 generateObstacles();
+                moveFood();
                 drawSnake();
                 drawFood();
                 drawObstacles();
