@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Sequence Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Encrypt/Decrypt Message</title>
     <style>
         /* Basic styling for progress bar */
         #progressContainer {
@@ -23,26 +22,37 @@
             line-height: 20px;
             color: white;
         }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Number Sequence Generator</h1>
+        <h1>Message Encryption & Decryption</h1>
         <div class="input-section">
-            <label for="lengthInput">Sequence Length:</label>
-            <input type="number" id="lengthInput" value="7" min="1" max="7">
-            <button id="generateBtn">Generate Sequences</button>
-            <div id="loadingMessage" style="display:none;">Generating sequences, please wait...</div>
+            <label for="messageInput">Message:</label>
+            <input type="text" id="messageInput" value="">
+            <button id="encryptBtn">Encrypt Message</button>
+            <button id="decryptBtn" style="display:none;">Decrypt Message</button>
+            <div id="loadingMessage" style="display:none;">Processing, please wait...</div>
             <div id="progressContainer" style="display:none;">
                 <div id="progressBar">0%</div>
             </div>
         </div>
-        <button id="downloadBtn" style="display:none;">Download as phone_numbers_list.txt</button>
+        <textarea id="result" rows="5" cols="50" readonly></textarea>
+        <button id="downloadBtn" style="display:none;">Download Encrypted Message</button>
     </div>
 
     <script>
         const chunkSize = 1000; // Number of sequences per chunk
         let generatedChunks = []; // Array to hold Blob chunks
+        let encryptionSequences = []; // To store sequences for encryption
 
         async function generateSequences(length) {
             const totalSequences = Math.pow(10, length); // 10^length
@@ -83,33 +93,83 @@
             progressBar.textContent = percentage + '%';
         }
 
-        document.getElementById('generateBtn').addEventListener('click', async function() {
-            const length = parseInt(document.getElementById('lengthInput').value);
+        function shiftCharacter(char, shift) {
+            let charCode = char.charCodeAt(0);
+            return String.fromCharCode(charCode + shift);
+        }
+
+        function reverseShiftCharacter(char, shift) {
+            let charCode = char.charCodeAt(0);
+            return String.fromCharCode(charCode - shift);
+        }
+
+        async function encryptMessage(message) {
+            encryptionSequences = [];
+            let encryptedMessage = '';
+            const length = message.length;
+            const totalSequences = Math.pow(10, length);
+            let currentChunk = [];
+
+            // Generate a random sequence for each character in the message
+            for (let i = 0; i < message.length; i++) {
+                const randomIndex = Math.floor(Math.random() * totalSequences);
+                let currentSequence = randomIndex.toString().padStart(length, '0');
+                encryptionSequences.push(currentSequence); // Store sequence for decryption
+                const shiftValue = parseInt(currentSequence[i % currentSequence.length]);
+                encryptedMessage += shiftCharacter(message[i], shiftValue);
+            }
+
+            return encryptedMessage;
+        }
+
+        async function decryptMessage(encryptedMessage) {
+            let decryptedMessage = '';
+
+            for (let i = 0; i < encryptedMessage.length; i++) {
+                const shiftValue = parseInt(encryptionSequences[i][i % encryptionSequences[i].length]);
+                decryptedMessage += reverseShiftCharacter(encryptedMessage[i], shiftValue);
+            }
+
+            return decryptedMessage;
+        }
+
+        document.getElementById('encryptBtn').addEventListener('click', async function() {
+            const message = document.getElementById('messageInput').value;
+            const resultField = document.getElementById('result');
             const downloadBtn = document.getElementById('downloadBtn');
             const loadingMessage = document.getElementById('loadingMessage');
             const progressContainer = document.getElementById('progressContainer');
 
-            // Disable the generate button
+            // Disable buttons during processing
             this.disabled = true; 
-            generatedChunks = [];
+            document.getElementById('decryptBtn').disabled = true;
             downloadBtn.style.display = 'none'; // Hide download button initially
             loadingMessage.style.display = 'block'; // Show loading message
             progressContainer.style.display = 'block'; // Show progress container
-            updateProgressBar(0, Math.pow(10, length)); // Reset progress bar
+            updateProgressBar(0, 100); // Reset progress bar
 
-            await generateSequences(length);
+            const encryptedMessage = await encryptMessage(message);
 
+            resultField.value = encryptedMessage;
+            downloadBtn.style.display = 'block'; // Show download button
             loadingMessage.style.display = 'none'; // Hide loading message
             progressContainer.style.display = 'none'; // Hide progress container
-            downloadBtn.style.display = 'block'; // Show download button
 
-            // Re-enable the generate button
+            // Enable decrypt button
+            document.getElementById('decryptBtn').style.display = 'inline';
+            document.getElementById('decryptBtn').disabled = false;
             this.disabled = false; 
         });
 
+        document.getElementById('decryptBtn').addEventListener('click', async function() {
+            const encryptedMessage = document.getElementById('result').value;
+            const decryptedMessage = await decryptMessage(encryptedMessage);
+            document.getElementById('result').value = decryptedMessage;
+        });
+
         document.getElementById('downloadBtn').addEventListener('click', function() {
-            const combinedBlob = new Blob(generatedChunks, { type: 'text/plain' });
-            downloadFile(combinedBlob, 'phone_numbers_list.txt');
+            const blob = new Blob([document.getElementById('result').value], { type: 'text/plain' });
+            downloadFile(blob, 'encrypted_message.txt');
         });
 
         function downloadFile(blob, fileName) {
