@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypt/Decrypt Message</title>
+    <title>Encrypt/Decrypt with Online Dictionary</title>
     <style>
         /* Basic styling for progress bar */
         #progressContainer {
@@ -34,12 +34,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Message Encryption & Decryption</h1>
+        <h1>Encrypt & Decrypt with Online Dictionary</h1>
         <div class="input-section">
             <label for="messageInput">Message:</label>
             <input type="text" id="messageInput" value="">
             <button id="encryptBtn">Encrypt Message</button>
-            <button id="decryptBtn" style="display:none;">Decrypt Message</button>
+            <button id="decryptBtn" style="display:none;">Decrypt Message (Online Dictionary)</button>
             <div id="loadingMessage" style="display:none;">Processing, please wait...</div>
             <div id="progressContainer" style="display:none;">
                 <div id="progressBar">0%</div>
@@ -51,88 +51,79 @@
 
     <script>
         const chunkSize = 1000; // Number of sequences per chunk
-        let generatedChunks = []; // Array to hold Blob chunks
         let encryptionSequences = []; // To store sequences for encryption
 
-        async function generateSequences(length) {
-            const totalSequences = Math.pow(10, length); // 10^length
-            let currentChunk = []; // Current chunk of sequences
-
-            for (let i = 0; i < totalSequences; i++) {
-                let currentSequence = i.toString().padStart(length, '0');
-                currentChunk.push(currentSequence);
-
-                if (currentChunk.length >= chunkSize) {
-                    await saveChunk(currentChunk);
-                    currentChunk = []; // Reset for the next chunk
-                }
-
-                // Update progress bar
-                updateProgressBar(i + 1, totalSequences);
-
-                if (i % 1000 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
-            }
-
-            if (currentChunk.length > 0) {
-                await saveChunk(currentChunk);
-            }
-        }
-
-        async function saveChunk(chunk) {
-            const content = chunk.join('\n') + '\n';
-            const blob = new Blob([content], { type: 'text/plain' });
-            generatedChunks.push(blob);
-        }
-
-        function updateProgressBar(current, total) {
-            const progressBar = document.getElementById('progressBar');
-            const percentage = Math.round((current / total) * 100);
-            progressBar.style.width = percentage + '%';
-            progressBar.textContent = percentage + '%';
-        }
-
-        function shiftCharacter(char, shift) {
-            let charCode = char.charCodeAt(0);
-            return String.fromCharCode(charCode + shift);
-        }
-
-        function reverseShiftCharacter(char, shift) {
-            let charCode = char.charCodeAt(0);
-            return String.fromCharCode(charCode - shift);
-        }
-
+        // Encrypt the message
         async function encryptMessage(message) {
             encryptionSequences = [];
             let encryptedMessage = '';
-            const length = message.length;
-            const totalSequences = Math.pow(10, length);
-            let currentChunk = [];
 
             // Generate a random sequence for each character in the message
             for (let i = 0; i < message.length; i++) {
-                const randomIndex = Math.floor(Math.random() * totalSequences);
-                let currentSequence = randomIndex.toString().padStart(length, '0');
-                encryptionSequences.push(currentSequence); // Store sequence for decryption
-                const shiftValue = parseInt(currentSequence[i % currentSequence.length]);
-                encryptedMessage += shiftCharacter(message[i], shiftValue);
+                const randomShift = Math.floor(Math.random() * 10);  // Random shift between 0-9
+                encryptionSequences.push(randomShift); // Store sequence for decryption
+                encryptedMessage += shiftCharacter(message[i], randomShift);
             }
 
             return encryptedMessage;
         }
 
-        async function decryptMessage(encryptedMessage) {
+        // Shift characters for encryption
+        function shiftCharacter(char, shift) {
+            let charCode = char.charCodeAt(0);
+            return String.fromCharCode(charCode + shift);
+        }
+
+        // Reverse shift for decryption
+        function reverseShiftCharacter(char, shift) {
+            let charCode = char.charCodeAt(0);
+            return String.fromCharCode(charCode - shift);
+        }
+
+        // Decrypt using an online dictionary
+        async function decryptUsingDictionary(encryptedMessage) {
             let decryptedMessage = '';
 
+            // Attempt to decrypt each character based on the stored sequences
             for (let i = 0; i < encryptedMessage.length; i++) {
-                const shiftValue = parseInt(encryptionSequences[i][i % encryptionSequences[i].length]);
+                const shiftValue = encryptionSequences[i];
                 decryptedMessage += reverseShiftCharacter(encryptedMessage[i], shiftValue);
             }
 
-            return decryptedMessage;
+            // Split the decrypted message into words and validate with online dictionary
+            const words = decryptedMessage.split(' ');
+            const validWords = [];
+
+            for (const word of words) {
+                if (await isValidWord(word)) {
+                    validWords.push(word);
+                }
+            }
+
+            // If valid words are found in the dictionary, assume decryption is correct
+            if (validWords.length > 0) {
+                return validWords.join(' ');
+            } else {
+                return 'Decryption failed: No valid words found using the online dictionary.';
+            }
         }
 
+        // Check if a word is valid using the Free Dictionary API
+        async function isValidWord(word) {
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                if (!response.ok) {
+                    return false;
+                }
+                const data = await response.json();
+                return data.length > 0; // If the API returns a result, it's a valid word
+            } catch (error) {
+                console.error('Failed to fetch word definition:', error);
+                return false;
+            }
+        }
+
+        // Encrypt button action
         document.getElementById('encryptBtn').addEventListener('click', async function() {
             const message = document.getElementById('messageInput').value;
             const resultField = document.getElementById('result');
@@ -161,12 +152,14 @@
             this.disabled = false; 
         });
 
+        // Decrypt button action
         document.getElementById('decryptBtn').addEventListener('click', async function() {
             const encryptedMessage = document.getElementById('result').value;
-            const decryptedMessage = await decryptMessage(encryptedMessage);
+            const decryptedMessage = await decryptUsingDictionary(encryptedMessage);
             document.getElementById('result').value = decryptedMessage;
         });
 
+        // Download encrypted message
         document.getElementById('downloadBtn').addEventListener('click', function() {
             const blob = new Blob([document.getElementById('result').value], { type: 'text/plain' });
             downloadFile(blob, 'encrypted_message.txt');
@@ -179,6 +172,13 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function updateProgressBar(current, total) {
+            const progressBar = document.getElementById('progressBar');
+            const percentage = Math.round((current / total) * 100);
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
         }
     </script>
 </body>
