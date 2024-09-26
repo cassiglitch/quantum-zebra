@@ -39,24 +39,19 @@
             <label for="messageInput">Message:</label>
             <input type="text" id="messageInput" value="">
             <button id="encryptBtn">Encrypt Message</button>
-            <button id="decryptBtn">Decrypt Message (Online Dictionary)</button>
+            <button id="decryptBtn">Brute Force Decrypt (Online Dictionary)</button>
             <div id="loadingMessage" style="display:none;">Processing, please wait...</div>
             <div id="progressContainer" style="display:none;">
                 <div id="progressBar">0%</div>
             </div>
         </div>
         
-        <div class="input-section">
-            <label for="shiftInput">Shift Sequence (comma-separated):</label>
-            <input type="text" id="shiftInput" placeholder="e.g. 1,2,3" />
-        </div>
-
         <textarea id="result" rows="5" cols="50" readonly></textarea>
         <button id="downloadBtn" style="display:none;">Download Encrypted Message</button>
     </div>
 
     <script>
-        const chunkSize = 1000; // Number of sequences per chunk
+        const maxShift = 10; // Maximum shift value for characters
         let encryptionSequences = []; // To store sequences for encryption
 
         // Encrypt the message
@@ -66,7 +61,7 @@
 
             // Generate a random sequence for each character in the message
             for (let i = 0; i < message.length; i++) {
-                const randomShift = Math.floor(Math.random() * 10);  // Random shift between 0-9
+                const randomShift = Math.floor(Math.random() * maxShift);  // Random shift between 0-9
                 encryptionSequences.push(randomShift); // Store sequence for decryption
                 encryptedMessage += shiftCharacter(message[i], randomShift);
             }
@@ -86,32 +81,53 @@
             return String.fromCharCode(charCode - shift);
         }
 
-        // Decrypt using an online dictionary
-        async function decryptUsingDictionary(encryptedMessage, shifts) {
-            let decryptedMessage = '';
+        // Brute-force decryption using an online dictionary
+        async function bruteForceDecrypt(encryptedMessage) {
+            const possibleShifts = generateAllShiftCombinations(encryptedMessage.length);
+            for (const shifts of possibleShifts) {
+                const decryptedMessage = decryptWithShifts(encryptedMessage, shifts);
+                if (await validateDecryptedMessage(decryptedMessage)) {
+                    return decryptedMessage;
+                }
+            }
+            return 'Decryption failed: No valid words found using the online dictionary.';
+        }
 
-            // Attempt to decrypt each character based on the provided shifts
+        // Generate all combinations of shifts
+        function generateAllShiftCombinations(length) {
+            const combinations = [];
+            const maxCombinations = Math.pow(maxShift, length);
+            for (let i = 0; i < maxCombinations; i++) {
+                const shifts = [];
+                let num = i;
+                for (let j = 0; j < length; j++) {
+                    shifts.push(num % maxShift);
+                    num = Math.floor(num / maxShift);
+                }
+                combinations.push(shifts);
+            }
+            return combinations;
+        }
+
+        // Decrypt with specific shifts
+        function decryptWithShifts(encryptedMessage, shifts) {
+            let decryptedMessage = '';
             for (let i = 0; i < encryptedMessage.length; i++) {
                 const shiftValue = shifts[i] || 0; // Default to 0 if no shift is provided
                 decryptedMessage += reverseShiftCharacter(encryptedMessage[i], shiftValue);
             }
+            return decryptedMessage;
+        }
 
-            // Split the decrypted message into words and validate with online dictionary
+        // Validate decrypted message with the online dictionary
+        async function validateDecryptedMessage(decryptedMessage) {
             const words = decryptedMessage.split(' ');
-            const validWords = [];
-
             for (const word of words) {
-                if (await isValidWord(word)) {
-                    validWords.push(word);
+                if (!await isValidWord(word)) {
+                    return false;
                 }
             }
-
-            // If valid words are found in the dictionary, assume decryption is correct
-            if (validWords.length > 0) {
-                return validWords.join(' ');
-            } else {
-                return 'Decryption failed: No valid words found using the online dictionary.';
-            }
+            return true; // All words are valid
         }
 
         // Check if a word is valid using the Free Dictionary API
@@ -158,16 +174,24 @@
         // Decrypt button action
         document.getElementById('decryptBtn').addEventListener('click', async function() {
             const encryptedMessage = document.getElementById('result').value;
-            const shiftInput = document.getElementById('shiftInput').value;
-            const shifts = shiftInput.split(',').map(Number); // Convert comma-separated string to an array of numbers
 
             if (!encryptedMessage) {
                 alert('No encrypted message found.');
                 return;
             }
 
-            const decryptedMessage = await decryptUsingDictionary(encryptedMessage, shifts);
+            const loadingMessage = document.getElementById('loadingMessage');
+            const progressContainer = document.getElementById('progressContainer');
+
+            loadingMessage.style.display = 'block'; // Show loading message
+            progressContainer.style.display = 'block'; // Show progress container
+            updateProgressBar(0, 100); // Reset progress bar
+
+            const decryptedMessage = await bruteForceDecrypt(encryptedMessage);
             document.getElementById('result').value = decryptedMessage;
+
+            loadingMessage.style.display = 'none'; // Hide loading message
+            progressContainer.style.display = 'none'; // Hide progress container
         });
 
         // Download encrypted message
