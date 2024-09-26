@@ -31,7 +31,6 @@
         let startingGridSize = 20;
         let gridSize = 20;
 
-        // Function to find the closest multiple of m to n
         function closestNumber(n, m) {
             let q = Math.floor(n / m);
             let n1 = m * q;
@@ -51,18 +50,25 @@
         let snake = [{ x: 50, y: 300 }];
         let food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
         let gravity = 0.5;
-        let jumpStrength = 8;
+        let jumpStrength = 12; // Increased jump height
         let isGameOver = false;
         let score = 0;
         let obstacles = [];
         let obstacleFrequency = 90; // Frames until next obstacle
         let frameCount = 0;
 
-        document.addEventListener('click', () => {
+        function jump() {
             if (!isGameOver) {
                 snake[0].y -= jumpStrength; // Flap/jump mechanic
             } else {
                 resetGame();
+            }
+        }
+
+        document.addEventListener('click', jump);
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                jump();
             }
         });
 
@@ -86,9 +92,7 @@
         }
 
         function updateSnake() {
-            // Gravity effect
             snake[0].y += gravity; // Head falls with gravity
-            // Update snake segments
             for (let i = snake.length - 1; i > 0; i--) {
                 snake[i].y = snake[i - 1].y; // Follow the head
                 snake[i].x = snake[i - 1].x;
@@ -105,16 +109,13 @@
             obstacles.forEach(obstacle => {
                 obstacle.x -= 5; // Move obstacles to the left
             });
-            // Remove off-screen obstacles
             obstacles = obstacles.filter(obstacle => obstacle.x + 20 > 0);
         }
 
         function checkCollision() {
-            // Check collision with walls
             if (snake[0].y + 20 > canvas.height || snake[0].y < 0) {
                 isGameOver = true;
             }
-            // Check collision with obstacles
             obstacles.forEach(obstacle => {
                 if (snake[0].x + 20 > obstacle.x && snake[0].x < obstacle.x + 20 && snake[0].y < obstacle.y + obstacle.height) {
                     isGameOver = true;
@@ -144,7 +145,6 @@
                 drawObstacles();
                 checkCollision();
                 
-                // Check if the snake eats the food
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
                     snake.push({}); // Grow the snake
@@ -160,13 +160,12 @@
                 ctx.font = '30px Arial';
                 ctx.fillText('Game Over', 100, canvas.height / 2);
                 ctx.fillText('Score: ' + score, 130, canvas.height / 2 + 40);
-                ctx.fillText('Click to Restart', 70, canvas.height / 2 + 80);
+                ctx.fillText('Click or Press Space to Restart', 30, canvas.height / 2 + 80);
             }
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Call resizeCanvas initially and on window resize
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
