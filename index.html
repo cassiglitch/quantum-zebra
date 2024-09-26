@@ -18,29 +18,48 @@
     </div>
 
     <script>
-        let generatedSequences = []; // Array to hold generated sequences
+        const chunkSize = 1000; // Number of sequences per chunk
+        let generatedChunks = []; // Array to hold Blob chunks
 
         async function generateSequences(length) {
             const totalSequences = Math.pow(10, length); // 10^length
+            let currentChunk = []; // Current chunk of sequences
 
             for (let i = 0; i < totalSequences; i++) {
                 // Convert number to string and pad with leading zeros
                 let currentSequence = i.toString().padStart(length, '0');
-                generatedSequences.push(currentSequence); // Store in the array
+                currentChunk.push(currentSequence);
+
+                // If chunk size is reached, create a Blob and reset the chunk
+                if (currentChunk.length >= chunkSize) {
+                    await saveChunk(currentChunk);
+                    currentChunk = []; // Reset for the next chunk
+                }
 
                 // Optionally, yield to UI every 1000 iterations
                 if (i % 1000 === 0) {
                     await new Promise(resolve => setTimeout(resolve, 0));
                 }
             }
+
+            // Save any remaining sequences in the last chunk
+            if (currentChunk.length > 0) {
+                await saveChunk(currentChunk);
+            }
+        }
+
+        async function saveChunk(chunk) {
+            const content = chunk.join('\n') + '\n'; // Format the chunk
+            const blob = new Blob([content], { type: 'text/plain' });
+            generatedChunks.push(blob); // Store the blob in the array
         }
 
         document.getElementById('generateBtn').addEventListener('click', async function() {
             const length = parseInt(document.getElementById('lengthInput').value);
             const downloadBtn = document.getElementById('downloadBtn');
 
-            // Reset generated sequences
-            generatedSequences = [];
+            // Reset generated chunks
+            generatedChunks = [];
             downloadBtn.style.display = 'none'; // Hide download button initially
 
             // Generate sequences
@@ -51,13 +70,12 @@
         });
 
         document.getElementById('downloadBtn').addEventListener('click', function() {
-            // Combine all sequences into a single string
-            const combinedContent = generatedSequences.join('\n') + '\n';
-            downloadFile(combinedContent, 'phone_numbers_list.txt');
+            // Combine all blob chunks into a single file
+            const combinedBlob = new Blob(generatedChunks, { type: 'text/plain' });
+            downloadFile(combinedBlob, 'phone_numbers_list.txt');
         });
 
-        function downloadFile(content, fileName) {
-            const blob = new Blob([content], { type: 'text/plain' });
+        function downloadFile(blob, fileName) {
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
