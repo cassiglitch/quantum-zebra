@@ -89,6 +89,8 @@
             const loadingMessage = document.getElementById('loadingMessage');
             const progressContainer = document.getElementById('progressContainer');
 
+            // Disable the generate button
+            this.disabled = true; 
             generatedChunks = [];
             downloadBtn.style.display = 'none'; // Hide download button initially
             loadingMessage.style.display = 'block'; // Show loading message
@@ -100,6 +102,9 @@
             loadingMessage.style.display = 'none'; // Hide loading message
             progressContainer.style.display = 'none'; // Hide progress container
             downloadBtn.style.display = 'block'; // Show download button
+
+            // Re-enable the generate button
+            this.disabled = false; 
         });
 
         document.getElementById('downloadBtn').addEventListener('click', function() {
