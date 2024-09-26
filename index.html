@@ -173,7 +173,8 @@
 
         // Decrypt button action
         document.getElementById('decryptBtn').addEventListener('click', async function() {
-            const encryptedMessage = document.getElementById('result').value;
+            const resultField = document.getElementById('result');
+            const encryptedMessage = resultField.value; // Get the last encrypted message from the result field
 
             if (!encryptedMessage) {
                 alert('No encrypted message found.');
@@ -188,7 +189,7 @@
             updateProgressBar(0, 100); // Reset progress bar
 
             const decryptedMessage = await bruteForceDecrypt(encryptedMessage);
-            document.getElementById('result').value = decryptedMessage;
+            resultField.value = decryptedMessage;
 
             loadingMessage.style.display = 'none'; // Hide loading message
             progressContainer.style.display = 'none'; // Hide progress container
