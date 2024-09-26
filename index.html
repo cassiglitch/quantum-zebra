@@ -39,12 +39,18 @@
             <label for="messageInput">Message:</label>
             <input type="text" id="messageInput" value="">
             <button id="encryptBtn">Encrypt Message</button>
-            <button id="decryptBtn" style="display:none;">Decrypt Message (Online Dictionary)</button>
+            <button id="decryptBtn">Decrypt Message (Online Dictionary)</button>
             <div id="loadingMessage" style="display:none;">Processing, please wait...</div>
             <div id="progressContainer" style="display:none;">
                 <div id="progressBar">0%</div>
             </div>
         </div>
+        
+        <div class="input-section">
+            <label for="shiftInput">Shift Sequence (comma-separated):</label>
+            <input type="text" id="shiftInput" placeholder="e.g. 1,2,3" />
+        </div>
+
         <textarea id="result" rows="5" cols="50" readonly></textarea>
         <button id="downloadBtn" style="display:none;">Download Encrypted Message</button>
     </div>
@@ -81,12 +87,12 @@
         }
 
         // Decrypt using an online dictionary
-        async function decryptUsingDictionary(encryptedMessage) {
+        async function decryptUsingDictionary(encryptedMessage, shifts) {
             let decryptedMessage = '';
 
-            // Attempt to decrypt each character based on the stored sequences
+            // Attempt to decrypt each character based on the provided shifts
             for (let i = 0; i < encryptedMessage.length; i++) {
-                const shiftValue = encryptionSequences[i];
+                const shiftValue = shifts[i] || 0; // Default to 0 if no shift is provided
                 decryptedMessage += reverseShiftCharacter(encryptedMessage[i], shiftValue);
             }
 
@@ -133,7 +139,6 @@
 
             // Disable buttons during processing
             this.disabled = true; 
-            document.getElementById('decryptBtn').disabled = true;
             downloadBtn.style.display = 'none'; // Hide download button initially
             loadingMessage.style.display = 'block'; // Show loading message
             progressContainer.style.display = 'block'; // Show progress container
@@ -146,16 +151,22 @@
             loadingMessage.style.display = 'none'; // Hide loading message
             progressContainer.style.display = 'none'; // Hide progress container
 
-            // Enable decrypt button
-            document.getElementById('decryptBtn').style.display = 'inline';
-            document.getElementById('decryptBtn').disabled = false;
+            // Re-enable the encrypt button
             this.disabled = false; 
         });
 
         // Decrypt button action
         document.getElementById('decryptBtn').addEventListener('click', async function() {
             const encryptedMessage = document.getElementById('result').value;
-            const decryptedMessage = await decryptUsingDictionary(encryptedMessage);
+            const shiftInput = document.getElementById('shiftInput').value;
+            const shifts = shiftInput.split(',').map(Number); // Convert comma-separated string to an array of numbers
+
+            if (!encryptedMessage) {
+                alert('No encrypted message found.');
+                return;
+            }
+
+            const decryptedMessage = await decryptUsingDictionary(encryptedMessage, shifts);
             document.getElementById('result').value = decryptedMessage;
         });
 
