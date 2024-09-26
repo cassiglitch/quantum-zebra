@@ -1,201 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Tic Tac Toe</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-  }
-  
-  .super-board {
-    display: grid;
-    grid-template-columns: repeat(9, 40px);
-    grid-template-rows: repeat(9, 40px);
-    grid-gap: 2px;
-    margin-bottom: 20px;
-  }
-  
-  .cell {
-    width: 40px;
-    height: 40px;
-    background-color: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5em;
-    cursor: pointer;
-  }
-  
-  .message {
-    font-size: 1.2em;
-    margin-top: 10px;
-  }
-  
-  button {
-    font-size: 1em;
-    padding: 10px 20px;
-    cursor: pointer;
-  }
-
-  .won {
-    background-color: #9acd32; /* Green */
-  }
-
-  .draw {
-    background-color: #ffd700; /* Yellow */
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Sequence Generator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Super Tic Tac Toe</h1>
-<div id="superBoard" class="super-board">
-  <!-- Super Tic Tac Toe grid -->
-</div>
-<button id="resetButton">Reset</button>
-<div id="message" class="message"></div>
+    <div class="container">
+        <h1>Number Sequence Generator</h1>
+        <div class="input-section">
+            <label for="lengthInput">Sequence Length:</label>
+            <input type="number" id="lengthInput" value="7" min="1" max="10">
+            <button id="generateBtn">Generate Sequences</button>
+        </div>
+        <div class="output-section">
+            <h2>Generated Sequences</h2>
+            <textarea id="outputArea" readonly></textarea>
+        </div>
+        <button id="downloadBtn" style="display:none;">Download as phone_numbers_list.txt</button>
+    </div>
 
-<script>
-  const superBoard = document.getElementById('superBoard');
-  const resetButton = document.getElementById('resetButton');
-  const message = document.getElementById('message');
+    <script>
+        let generatedSequenceString = ''; // Stores the string with \n for all sequences
 
-  // Create the super Tic Tac Toe grid
-  for (let i = 0; i < 9; i++) {
-    for (let j = 0; j < 9; j++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cell.dataset.rowIndex = i;
-      cell.dataset.colIndex = j;
-      cell.addEventListener('click', makeMove);
-      superBoard.appendChild(cell);
-    }
-  }
+        async function generateSequences(length) {
+            const totalSequences = Math.pow(10, length); // 10^length
+            const outputArea = document.getElementById('outputArea');
+            let sequences = new Array(totalSequences); // Pre-allocate array for speed
 
-  let currentPlayer = 'X';
-  let gameEnded = false;
-  let boardStates = Array(9).fill().map(() => Array(9).fill(''));
+            for (let i = 0; i < totalSequences; i++) {
+                // Convert number to a string and pad with zeros to the required length
+                sequences[i] = i.toString().padStart(length, '0');
+            }
 
-  const winningCombos = [
-    // Rows
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [9, 10, 11], [12, 13, 14], [15, 16, 17],
-    [18, 19, 20], [21, 22, 23], [24, 25, 26],
-    // Columns
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [9, 12, 15], [10, 13, 16], [11, 14, 17],
-    [18, 21, 24], [19, 22, 25], [20, 23, 26],
-    // Diagonals
-    [0, 4, 8], [2, 4, 6],
-    [9, 13, 17], [11, 13, 15],
-    [18, 22, 26], [20, 22, 24]
-  ];
+            // Join all sequences in one go, which is much faster than repeated concatenation
+            generatedSequenceString = sequences.join('\n');
 
-  function makeMove(event) {
-    if (gameEnded) return;
-
-    const rowIndex = parseInt(event.target.dataset.rowIndex);
-    const colIndex = parseInt(event.target.dataset.colIndex);
-
-    const miniBoardIndex = determineMiniBoard(rowIndex, colIndex);
-    const currentMiniBoard = boardStates[miniBoardIndex];
-
-    if (currentMiniBoard.every(row => row.every(cell => cell !== ''))) {
-      if (!checkWin(currentMiniBoard)) {
-        return; // Mini-board is full and no winner, can't play here
-      }
-    }
-
-    if (boardStates[rowIndex][colIndex] === '') {
-      boardStates[rowIndex][colIndex] = currentPlayer;
-      event.target.innerText = currentPlayer;
-      
-      // Check for a win on the current mini-board
-      if (checkWin(boardStates[miniBoardIndex])) {
-        // Mark the winning mini-board
-        event.target.classList.add('won');
-        boardStates[miniBoardIndex] = currentPlayer; // Claim the mini-board
-        // Check for a win on the overall board
-        if (checkWin(boardStates)) {
-          message.innerText = `${currentPlayer} wins the game!`;
-          gameEnded = true;
+            // Update the textarea once at the end (this reduces the number of DOM updates)
+            outputArea.value = generatedSequenceString;
         }
-      } else if (checkDraw(boardStates[miniBoardIndex])) {
-        // If the mini-board is full but no winner, mark it as a draw
-        event.target.classList.add('draw');
-      }
 
-      // Check for a draw on the overall board
-      if (!gameEnded && checkDraw(boardStates)) {
-        message.innerText = 'It\'s a draw!';
-        gameEnded = true;
-      }
+        document.getElementById('generateBtn').addEventListener('click', async function() {
+            const length = parseInt(document.getElementById('lengthInput').value);
+            const outputArea = document.getElementById('outputArea');
+            const downloadBtn = document.getElementById('downloadBtn');
 
-      // Switch players
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            // Reset output area and generated string
+            outputArea.value = '';
+            generatedSequenceString = '';
+            downloadBtn.style.display = 'none';
 
-      // If the current player is the AI (O), make its move
-      if (currentPlayer === 'O' && !gameEnded) {
-        setTimeout(makeAIMove, 500); // Delay for better visualization
-      }
-    }
-  }
+            // Generate sequences
+            await generateSequences(length);
 
-  function determineMiniBoard(rowIndex, colIndex) {
-    return Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
-  }
+            // Show the download button when all sequences are generated
+            downloadBtn.style.display = 'block';
+            downloadBtn.onclick = function() {
+                downloadFile(generatedSequenceString, 'phone_numbers_list.txt');
+            };
+        });
 
-  function makeAIMove() {
-    let availableMoves = [];
-    // Collect available moves
-    for (let i = 0; i < 9; i++) {
-      for (let j = 0; j < 9; j++) {
-        if (boardStates[i][j] === '') {
-          availableMoves.push({ row: i, col: j });
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-      }
-    }
-    // Randomly select a move
-    const randomIndex = Math.floor(Math.random() * availableMoves.length);
-    const { row, col } = availableMoves[randomIndex];
-    const cell = superBoard.querySelector(`[data-row-index="${row}"][data-col-index="${col}"]`);
-    cell.click();
-  }
-
-  function checkWin(board) {
-    return winningCombos.some(combo => {
-      return combo.every(index => {
-        const row = Math.floor(index / 3);
-        const col = index % 3;
-        return board[row][col] === currentPlayer;
-      });
-    });
-  }
-
-  function checkDraw(board) {
-    return board.every(row => {
-      return row.every(cell => {
-        return cell !== '';
-      });
-    });
-  }
-
-  function reset() {
-    currentPlayer = 'X';
-    gameEnded = false;
-    boardStates = Array(9).fill().map(() => Array(9).fill(''));
-    message.innerText = `Player ${currentPlayer}'s turn`;
-    superBoard.querySelectorAll('.cell').forEach(cell => {
-      cell.innerText = '';
-      cell.classList.remove('won', 'draw');
-    });
- 
-  resetButton.addEventListener('click', reset);
-}
-
-resetButton.addEventListener('click', reset);
-</script>
+    </script>
 </body>
 </html>
