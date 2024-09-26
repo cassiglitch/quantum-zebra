@@ -73,6 +73,8 @@
                 snake[0].x -= 20; // Move left
             } else if (event.code === 'ArrowRight') {
                 snake[0].x += 20; // Move right
+            } else if (event.code === 'ArrowDown') {
+                snake[0].y += 20; // Move down
             }
         });
 
@@ -125,15 +127,14 @@
         }
 
         function checkCollision() {
+            // Game over if the snake hits the canvas boundaries
             if (snake[0].y + 20 > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + 20 > canvas.width) {
                 isGameOver = true;
             }
             obstacles.forEach(obstacle => {
                 if (snake[0].x + 20 > obstacle.x && snake[0].x < obstacle.x + 20 && snake[0].y < obstacle.y + obstacle.height && snake[0].y + 20 > obstacle.y) {
-                    // Game over only if the snake is exactly touching the obstacle
-                    if (snake[0].x + 20 === obstacle.x || snake[0].x === obstacle.x + 20) {
-                        isGameOver = true;
-                    }
+                    // Game over if touching the obstacle
+                    isGameOver = true;
                 }
             });
         }
@@ -163,7 +164,7 @@
                 
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
-                    snake.push({}); // Grow the snake
+                    snake.push({}); // Grow the snake by adding a new segment
                     food.x = Math.random() * (canvas.width - 20);
                     food.y = Math.random() * (canvas.height - 20);
                 }
