@@ -14,51 +14,46 @@
             <input type="number" id="lengthInput" value="7" min="1" max="10">
             <button id="generateBtn">Generate Sequences</button>
         </div>
-        <div class="output-section">
-            <h2>Generated Sequences</h2>
-            <textarea id="outputArea" readonly></textarea>
-        </div>
         <button id="downloadBtn" style="display:none;">Download as phone_numbers_list.txt</button>
     </div>
 
     <script>
-        let generatedSequenceString = ''; // Stores the string with \n for all sequences
+        let generatedSequences = []; // Array to hold generated sequences
 
         async function generateSequences(length) {
             const totalSequences = Math.pow(10, length); // 10^length
-            const outputArea = document.getElementById('outputArea');
-            let sequences = new Array(totalSequences); // Pre-allocate array for speed
 
             for (let i = 0; i < totalSequences; i++) {
-                // Convert number to a string and pad with zeros to the required length
-                sequences[i] = i.toString().padStart(length, '0');
+                // Convert number to string and pad with leading zeros
+                let currentSequence = i.toString().padStart(length, '0');
+                generatedSequences.push(currentSequence); // Store in the array
+
+                // Optionally, yield to UI every 1000 iterations
+                if (i % 1000 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
-
-            // Join all sequences in one go, which is much faster than repeated concatenation
-            generatedSequenceString = sequences.join('\n');
-
-            // Update the textarea once at the end (this reduces the number of DOM updates)
-            outputArea.value = generatedSequenceString;
         }
 
         document.getElementById('generateBtn').addEventListener('click', async function() {
             const length = parseInt(document.getElementById('lengthInput').value);
-            const outputArea = document.getElementById('outputArea');
             const downloadBtn = document.getElementById('downloadBtn');
 
-            // Reset output area and generated string
-            outputArea.value = '';
-            generatedSequenceString = '';
-            downloadBtn.style.display = 'none';
+            // Reset generated sequences
+            generatedSequences = [];
+            downloadBtn.style.display = 'none'; // Hide download button initially
 
             // Generate sequences
             await generateSequences(length);
 
-            // Show the download button when all sequences are generated
+            // Show the download button after generation
             downloadBtn.style.display = 'block';
-            downloadBtn.onclick = function() {
-                downloadFile(generatedSequenceString, 'phone_numbers_list.txt');
-            };
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            // Combine all sequences into a single string
+            const combinedContent = generatedSequences.join('\n') + '\n';
+            downloadFile(combinedContent, 'phone_numbers_list.txt');
         });
 
         function downloadFile(content, fileName) {
