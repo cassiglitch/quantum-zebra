@@ -162,9 +162,14 @@
                 drawObstacles();
                 checkCollision();
                 
+                // Check if snake eats the food
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
-                    snake.push({ x: snake[snake.length - 1].x, y: snake[snake.length - 1].y }); // Grow the snake by adding a new segment
+                    // Grow the snake by adding a new segment at the end of the current snake length
+                    const newSegment = { x: snake[snake.length - 1].x, y: snake[snake.length - 1].y };
+                    snake.push(newSegment); // Append a new segment
+
+                    // Move food to a new random position
                     food.x = Math.random() * (canvas.width - 20);
                     food.y = Math.random() * (canvas.height - 20);
                 }
