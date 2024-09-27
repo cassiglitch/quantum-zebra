@@ -48,7 +48,7 @@
         }
 
         let snake = [{ x: 50, y: 300 }];
-        let previousPositions = []; // Track previous positions for each segment
+        let previousPositions = [{ x: 50, y: 300 }]; // Track previous positions
         let food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
         let gravity = 0.5;
         let jumpStrength = 12; // Increased jump height
@@ -57,11 +57,10 @@
         let obstacles = [];
         let obstacleFrequency = 90; // Frames until next obstacle
         let frameCount = 0;
-        let velocity = { x: 0, y: 0 }; // Snake velocity
 
         function jump() {
             if (!isGameOver) {
-                velocity.y = -jumpStrength; // Flap/jump mechanic
+                snake[0].y -= jumpStrength; // Flap/jump mechanic
             } else {
                 resetGame();
             }
@@ -72,11 +71,11 @@
             if (event.code === 'ArrowUp') {
                 jump(); // Change jump to Up arrow
             } else if (event.code === 'ArrowLeft') {
-                velocity.x = -2; // Move left
+                snake[0].x -= 20; // Move left
             } else if (event.code === 'ArrowRight') {
-                velocity.x = 2; // Move right
+                snake[0].x += 20; // Move right
             } else if (event.code === 'ArrowDown') {
-                velocity.y = 2; // Move down
+                snake[0].y += 20; // Move down
             }
         });
 
@@ -100,17 +99,18 @@
         }
 
         function updateSnake() {
-            // Store the current position of the head before moving
-            previousPositions.unshift({ x: snake[0].x, y: snake[0].y });
+            // Update the position of the head
+            snake[0].y += gravity; // Head falls with gravity
 
-            // Move the head based on velocity
-            snake[0].x += velocity.x;
-            snake[0].y += velocity.y + gravity;
+            // Store the current position of the head before moving
+            const headPosition = { x: snake[0].x, y: snake[0].y };
+            previousPositions.unshift(headPosition);
 
             // Move the rest of the snake based on the stored positions
             for (let i = 1; i < snake.length; i++) {
-                snake[i].x = previousPositions[i].x;
-                snake[i].y = previousPositions[i].y;
+                // Each segment follows the previous segment's last position
+                snake[i].x = previousPositions[i - 1].x; // Follow the head
+                snake[i].y = previousPositions[i - 1].y; // Follow the head
             }
 
             // Limit the number of stored positions to the length of the snake
@@ -155,14 +155,13 @@
 
         function resetGame() {
             snake = [{ x: 50, y: 300 }];
-            previousPositions = []; // Reset previous positions
+            previousPositions = [{ x: 50, y: 300 }]; // Reset previous positions
             food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
             obstacles = [];
             score = 0;
             frameCount = 0;
             isGameOver = false;
             resizeCanvas();
-            velocity = { x: 0, y: 0 }; // Reset velocity
         }
 
         function gameLoop() {
@@ -181,6 +180,7 @@
                 // Check if snake eats the food
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
+                    gravity++;
                     // Grow the snake by adding a new segment at the end of the current snake length
                     const newSegment = { x: snake[snake.length - 1].x, y: snake[snake.length - 1].y };
                     snake.push(newSegment); // Append a new segment
@@ -214,7 +214,6 @@
 
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        
         gameLoop();
     </script>
 </body>
