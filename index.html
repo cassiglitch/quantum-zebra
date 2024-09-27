@@ -193,9 +193,18 @@
 
                     // Calculate the new segment's position based on the last direction
                     let newSegment = {
-                        x: snake[0].x + lastDirection.x,
-                        y: snake[0].y + lastDirection.y
+                        x: snake[0].x, // Default to head position
+                        y: snake[0].y  // Default to head position
                     };
+
+                    // Add or subtract based on the last direction
+                    if (lastDirection.x !== 0) {
+                        newSegment.x += lastDirection.x; // Move segment in the last horizontal direction
+                        newSegment.y = snake[0].y; // Keep the y coordinate the same as the head
+                    } else if (lastDirection.y !== 0) {
+                        newSegment.y += lastDirection.y; // Move segment in the last vertical direction
+                        newSegment.x = snake[0].x; // Keep the x coordinate the same as the head
+                    }
 
                     snake.push(newSegment); // Append the new segment
 
@@ -206,19 +215,20 @@
 
                 // Check if the snake dodges any obstacle
                 obstacles.forEach(obstacle => {
-                    if (obstacle.x + 20 < snake[0].x && !obstacle.scored) {
+                    if (obstacle.x + 20 < snake[0].x) {
                         score++; // Increment score for dodging
-                        obstacle.scored = true; // Mark obstacle as scored
+                        obstacles = obstacles.filter(o => o !== obstacle); // Remove the dodged obstacle
                     }
                 });
 
                 ctx.fillStyle = 'black';
-                ctx.font = '20px Arial';
                 ctx.fillText('Score: ' + score, 10, 20);
             } else {
                 ctx.fillStyle = 'red';
-                ctx.font = '40px Arial';
-                ctx.fillText('Game Over!', canvas.width / 2 - 100, canvas.height / 2);
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over', canvas.width / 2 - 70, canvas.height / 2);
+                ctx.font = '20px Arial';
+                ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2 + 30);
                 ctx.fillText('Click to Restart', canvas.width / 2 - 150, canvas.height / 2 + 50);
             }
 
