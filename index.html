@@ -127,13 +127,11 @@
         }
 
         function checkCollision() {
-            // Game over if the snake hits the canvas boundaries
             if (snake[0].y + 20 > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + 20 > canvas.width) {
                 isGameOver = true;
             }
             obstacles.forEach(obstacle => {
                 if (snake[0].x + 20 > obstacle.x && snake[0].x < obstacle.x + 20 && snake[0].y < obstacle.y + obstacle.height && snake[0].y + 20 > obstacle.y) {
-                    // Game over if touching the obstacle
                     isGameOver = true;
                 }
             });
@@ -152,7 +150,7 @@
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             frameCount++;
-            
+
             if (!isGameOver) {
                 updateSnake();
                 generateObstacles();
@@ -165,14 +163,22 @@
                 // Check if snake eats the food
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
-                    // Grow the snake by adding a new segment at the end of the current snake length
-                    const newSegment = { x: snake[snake.length - 1].x, y: snake[snake.length - 1].y };
+                    // Grow the snake by adding a new segment at the end
+                    const newSegment = { ...snake[snake.length - 1] }; // Copy the last segment's position
                     snake.push(newSegment); // Append a new segment
 
                     // Move food to a new random position
                     food.x = Math.random() * (canvas.width - 20);
                     food.y = Math.random() * (canvas.height - 20);
                 }
+
+                // Check if the snake dodges any obstacle
+                obstacles.forEach(obstacle => {
+                    if (obstacle.x + 20 < snake[0].x && !obstacle.scored) {
+                        score++; // Increment score for dodging
+                        obstacle.scored = true; // Mark obstacle as scored
+                    }
+                });
 
                 ctx.fillStyle = 'black';
                 ctx.font = '20px Arial';
