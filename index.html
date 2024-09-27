@@ -7,19 +7,16 @@
     <style>
         body {
             margin: 0;
-            overflow: hidden; /* Disable scrolling */
-            touch-action: none; /* Disable touch actions on the canvas */
+            overflow: hidden;
+            touch-action: none;
             user-select: none;
-            -webkit-user-select: none; /* For Safari */
-            -moz-user-select: none; /* For Firefox */
-            -ms-user-select: none; /* For Internet Explorer/Edge */
         }
         canvas {
             position: fixed;
             top: 0;
             bottom: 0;
             border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow to the canvas */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -50,16 +47,17 @@
         let snake = [{ x: 50, y: 300 }];
         let food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
         let gravity = 0.5;
-        let jumpStrength = 12; // Increased jump height
+        let jumpStrength = 12;
         let isGameOver = false;
         let score = 0;
         let obstacles = [];
-        let obstacleFrequency = 90; // Frames until next obstacle
+        let obstacleFrequency = 90;
         let frameCount = 0;
+        let snakeSpeed = 2;
 
         function jump() {
             if (!isGameOver) {
-                snake[0].y -= jumpStrength; // Flap/jump mechanic
+                snake[0].y -= jumpStrength;
             } else {
                 resetGame();
             }
@@ -68,70 +66,89 @@
         document.addEventListener('click', jump);
         document.addEventListener('keydown', (event) => {
             if (event.code === 'ArrowUp') {
-                jump(); // Change jump to Up arrow
+                jump();
             } else if (event.code === 'ArrowLeft') {
-                snake[0].x -= 20; // Move left
+                snake[0].x -= gridSize;
             } else if (event.code === 'ArrowRight') {
-                snake[0].x += 20; // Move right
+                snake[0].x += gridSize;
             } else if (event.code === 'ArrowDown') {
-                snake[0].y += 20; // Move down
+                snake[0].y += gridSize;
             }
         });
 
         function drawSnake() {
             ctx.fillStyle = 'green';
             snake.forEach(segment => {
-                ctx.fillRect(segment.x, segment.y, 20, 20);
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
             });
         }
 
         function drawFood() {
             ctx.fillStyle = 'red';
-            ctx.fillRect(food.x, food.y, 20, 20);
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
         }
 
         function drawObstacles() {
             ctx.fillStyle = 'brown';
             obstacles.forEach(obstacle => {
-                ctx.fillRect(obstacle.x, obstacle.y, 20, obstacle.height);
+                ctx.fillRect(obstacle.x, obstacle.y, gridSize, obstacle.height);
             });
         }
 
         function updateSnake() {
-            snake[0].y += gravity; // Head falls with gravity
+            // Move each segment to follow the one before it
             for (let i = snake.length - 1; i > 0; i--) {
-                snake[i].y = snake[i - 1].y; // Follow the head
                 snake[i].x = snake[i - 1].x;
+                snake[i].y = snake[i - 1].y;
+            }
+
+            // Apply gravity to the head
+            snake[0].y += gravity;
+
+            // Check if the snake eats food
+            if (snake[0].x < food.x + gridSize && snake[0].x + gridSize > food.x &&
+                snake[0].y < food.y + gridSize && snake[0].y + gridSize > food.y) {
+                score++;
+                // Add a new segment at the tail
+                let tail = { ...snake[snake.length - 1] }; // Duplicate the last segment
+                snake.push(tail);
+
+                // Relocate the food
+                food.x = Math.random() * (canvas.width - gridSize);
+                food.y = Math.random() * (canvas.height - gridSize);
             }
         }
 
         function generateObstacles() {
             if (frameCount % obstacleFrequency === 0) {
-                const gap = 100; // Gap between top and bottom obstacles
-                const heightTop = Math.random() * (canvas.height - gap - 20);
+                const gap = 100;
+                const heightTop = Math.random() * (canvas.height - gap - gridSize);
                 obstacles.push({ x: canvas.width, y: 0, height: heightTop });
                 obstacles.push({ x: canvas.width, y: heightTop + gap, height: canvas.height - heightTop - gap });
             }
+
             obstacles.forEach(obstacle => {
-                obstacle.x -= 5; // Move obstacles to the left
+                obstacle.x -= snakeSpeed;
             });
-            obstacles = obstacles.filter(obstacle => obstacle.x + 20 > 0);
+
+            obstacles = obstacles.filter(obstacle => obstacle.x + gridSize > 0);
         }
 
         function moveFood() {
-            food.x -= 2; // Move food to the left
-            if (food.x < -20) {
-                food.x = canvas.width + Math.random() * 100; // Reset food to the right
-                food.y = Math.random() * (canvas.height - 20); // Random vertical position
+            food.x -= 2;
+            if (food.x < -gridSize) {
+                food.x = canvas.width + Math.random() * 100;
+                food.y = Math.random() * (canvas.height - gridSize);
             }
         }
 
         function checkCollision() {
-            if (snake[0].y + 20 > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + 20 > canvas.width) {
+            if (snake[0].y + gridSize > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + gridSize > canvas.width) {
                 isGameOver = true;
             }
             obstacles.forEach(obstacle => {
-                if (snake[0].x + 20 > obstacle.x && snake[0].x < obstacle.x + 20 && snake[0].y < obstacle.y + obstacle.height && snake[0].y + 20 > obstacle.y) {
+                if (snake[0].x + gridSize > obstacle.x && snake[0].x < obstacle.x + gridSize &&
+                    snake[0].y < obstacle.y + obstacle.height && snake[0].y + gridSize > obstacle.y) {
                     isGameOver = true;
                 }
             });
@@ -139,7 +156,7 @@
 
         function resetGame() {
             snake = [{ x: 50, y: 300 }];
-            food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
+            food = { x: Math.random() * (canvas.width - gridSize), y: Math.random() * (canvas.height - gridSize) };
             obstacles = [];
             score = 0;
             frameCount = 0;
@@ -159,30 +176,10 @@
                 drawFood();
                 drawObstacles();
                 checkCollision();
-                
-                // Check if snake eats the food
-                if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
-                    score++;
-                    // Grow the snake by adding a new segment at the end
-                    const newSegment = { ...snake[snake.length - 1] }; // Copy the last segment's position
-                    snake.push(newSegment); // Append a new segment
-
-                    // Move food to a new random position
-                    food.x = Math.random() * (canvas.width - 20);
-                    food.y = Math.random() * (canvas.height - 20);
-                }
-
-                // Check if the snake dodges any obstacle
-                obstacles.forEach(obstacle => {
-                    if (obstacle.x + 20 < snake[0].x && !obstacle.scored) {
-                        score++; // Increment score for dodging
-                        obstacle.scored = true; // Mark obstacle as scored
-                    }
-                });
 
                 ctx.fillStyle = 'black';
                 ctx.font = '20px Arial';
-                ctx.fillText('Score: ' + snake.length, 10, 20);
+                ctx.fillText('Score: ' + score, 10, 20);
             } else {
                 ctx.fillStyle = 'black';
                 ctx.font = '30px Arial';
