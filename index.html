@@ -3,217 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird x Snake Game</title>
+    <title>Flappy Snake</title>
     <style>
         body {
-            overflow: hidden;
-            touch-action: none;
+            margin: 0;
+            overflow: hidden; /* Disable scrolling */
+            touch-action: none; /* Disable touch actions on the canvas */
             user-select: none;
+            -webkit-user-select: none; /* For Safari */
+            -moz-user-select: none; /* For Firefox */
+            -ms-user-select: none; /* For Internet Explorer/Edge */
         }
-
         canvas {
             position: fixed;
             top: 0;
             bottom: 0;
             border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #scoreDisplay {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            font-family: Arial, sans-serif;
-            color: #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow to the canvas */
         }
     </style>
 </head>
 <body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let startingGridSize = 20;
+        let gridSize = 20;
 
-<canvas id="snakeCanvas"></canvas>
-<div id="scoreDisplay">Score: 0</div>
-
-<script>
-    const canvas = document.getElementById('snakeCanvas');
-    const ctx = canvas.getContext('2d');
-    let score = 0;
-    let gravity = 2; // Gravity pulls the snake down
-    let jumpStrength = 30; // Jump strength for upward movement
-    let gridSize = 20;
-    let food = { x: 0, y: 0 };
-    let obstacles = [];
-    let previousPositions = [];
-    let isGameOver = false;
-    
-    const snake = [{ x: 100, y: 100 }]; // Snake starts with 1 segment
-    let speed = 4;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Utility function to get a random grid position
-    function getRandomGridPosition() {
-        return {
-            x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
-            y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize,
-        };
-    }
-
-    // Draw the snake
-    function drawSnake() {
-        ctx.fillStyle = "green";
-        for (let segment of snake) {
-            ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+        function closestNumber(n, m) {
+            let q = Math.floor(n / m);
+            let n1 = m * q;
+            let n2 = m * (q + 1);
+            if (n1 > n) return n;
+            if (n2 > n) return n1;
+            return Math.abs(n - n1) < Math.abs(n - n2) ? n1 : n2;
         }
-    }
 
-    // Draw food
-    function drawFood() {
-        ctx.fillStyle = "red";
-        ctx.fillRect(food.x, food.y, gridSize, gridSize);
-    }
-
-    // Draw obstacles
-    function drawObstacles() {
-        ctx.fillStyle = "blue";
-        for (let obstacle of obstacles) {
-            ctx.fillRect(obstacle.x, obstacle.y, gridSize, gridSize);
+        function resizeCanvas() {
+            const canvasWidth = closestNumber(window.innerWidth, gridSize);
+            const canvasHeight = closestNumber(window.innerHeight, gridSize);
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
         }
-    }
 
-    // Place food at a random position
-    function placeFood() {
-        food = getRandomGridPosition();
-    }
+        let snake = [{ x: 50, y: 300 }];
+        let previousPositions = []; // Track previous positions for each segment
+        let food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
+        let gravity = 0.5;
+        let jumpStrength = 12; // Increased jump height
+        let isGameOver = false;
+        let score = 0;
+        let obstacles = [];
+        let obstacleFrequency = 90; // Frames until next obstacle
+        let frameCount = 0;
+        let velocity = { x: 0, y: 0 }; // Snake velocity
 
-    // Place obstacles randomly
-    function placeObstacles() {
-        for (let i = 0; i < 5; i++) {
-            obstacles.push(getRandomGridPosition());
-        }
-    }
-
-    // Detect collision with food
-    function checkFoodCollision() {
-        if (snake[0].x === food.x && snake[0].y === food.y) {
-            score++;
-            growSnake();
-            placeFood();
-        }
-    }
-
-    // Grow the snake
-    function growSnake() {
-        const lastSegment = snake[snake.length - 1];
-        snake.push({ x: lastSegment.x, y: lastSegment.y });
-        gravity ++
-    }
-
-    // Detect collision with obstacles
-    function checkObstacleCollision() {
-        for (let obstacle of obstacles) {
-            if (snake[0].x === obstacle.x && snake[0].y === obstacle.y) {
-                isGameOver = true;
-                alert("Game Over! Your score: " + score);
+        function jump() {
+            if (!isGameOver) {
+                velocity.y = -jumpStrength; // Flap/jump mechanic
+            } else {
                 resetGame();
             }
         }
-    }
 
-    // Detect if snake's segments are overlapping
-    function checkSnakeOverlap() {
-        for (let i = 1; i < snake.length; i++) {
-            if (snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
-                isGameOver = true;
-                alert("Game Over! You collided with yourself. Score: " + score);
-                resetGame();
-            }
-        }
-    }
-
-    // Reset the game
-    function resetGame() {
-        snake.length = 1;
-        snake[0] = { x: 100, y: 100 };
-        score = 0;
-        placeFood();
-        obstacles = [];
-        placeObstacles();
-        isGameOver = false;
-    }
-
-    // Update Snake function that ensures no overlap
-    function updateSnake() {
-        // Only update position if the snake moves horizontally or vertically
-        let moved = false;
-
-        // Apply gravity (falling down) to the head
-        if (!isGameOver) {
-            snake[0].y += gravity;
-            moved = true;
-        }
-
-        // Move head left, right, or down
+        document.addEventListener('click', jump);
         document.addEventListener('keydown', (event) => {
             if (event.code === 'ArrowUp') {
-                snake[0].y -= jumpStrength; // Jump upwards
-                moved = true;
+                jump(); // Change jump to Up arrow
             } else if (event.code === 'ArrowLeft') {
-                snake[0].x -= gridSize; // Move left
-                moved = true;
+                velocity.x = -2; // Move left
             } else if (event.code === 'ArrowRight') {
-                snake[0].x += gridSize; // Move right
-                moved = true;
+                velocity.x = 2; // Move right
             } else if (event.code === 'ArrowDown') {
-                snake[0].y += gridSize; // Move down
-                moved = true;
+                velocity.y = 2; // Move down
             }
         });
 
-        // Only record the position if the snake has moved
-        if (moved) {
-            // Store current position of the head
+        function drawSnake() {
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, 20, 20);
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, 20, 20);
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = 'brown';
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, 20, obstacle.height);
+            });
+        }
+
+        function updateSnake() {
+            // Store the current position of the head before moving
             previousPositions.unshift({ x: snake[0].x, y: snake[0].y });
 
-            // Move the rest of the body segments based on previous positions
+            // Move the head based on velocity
+            snake[0].x += velocity.x;
+            snake[0].y += velocity.y + gravity;
+
+            // Move the rest of the snake based on the stored positions
             for (let i = 1; i < snake.length; i++) {
                 snake[i].x = previousPositions[i].x;
                 snake[i].y = previousPositions[i].y;
             }
 
-            // Limit the stored positions to match the length of the snake
+            // Limit the number of stored positions to the length of the snake
             while (previousPositions.length > snake.length) {
                 previousPositions.pop();
             }
         }
-    }
 
-    // Main game loop
-    function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+        function generateObstacles() {
+            if (frameCount % obstacleFrequency === 0) {
+                const gap = 100; // Gap between top and bottom obstacles
+                const heightTop = Math.random() * (canvas.height - gap - 20);
+                obstacles.push({ x: canvas.width, y: 0, height: heightTop });
+                obstacles.push({ x: canvas.width, y: heightTop + gap, height: canvas.height - heightTop - gap });
+            }
+            obstacles.forEach(obstacle => {
+                obstacle.x -= 5; // Move obstacles to the left
+            });
+            obstacles = obstacles.filter(obstacle => obstacle.x + 20 > 0);
+        }
 
-        updateSnake();
-        checkFoodCollision();
-        checkObstacleCollision();
-        checkSnakeOverlap();
+        function moveFood() {
+            food.x -= 2; // Move food to the left
+            if (food.x < -20) {
+                food.x = canvas.width + Math.random() * 100; // Reset food to the right
+                food.y = Math.random() * (canvas.height - 20); // Random vertical position
+            }
+        }
 
-        drawSnake();
-        drawFood();
-        drawObstacles();
+        function checkCollision() {
+            // Game over if the snake hits the canvas boundaries
+            if (snake[0].y + 20 > canvas.height || snake[0].y < 0 || snake[0].x < 0 || snake[0].x + 20 > canvas.width) {
+                isGameOver = true;
+            }
+            obstacles.forEach(obstacle => {
+                if (snake[0].x + 20 > obstacle.x && snake[0].x < obstacle.x + 20 && snake[0].y < obstacle.y + obstacle.height && snake[0].y + 20 > obstacle.y) {
+                    // Game over if touching the obstacle
+                    isGameOver = true;
+                }
+            });
+        }
 
-        document.getElementById('scoreDisplay').innerText = "Score: " + score;
+        function resetGame() {
+            snake = [{ x: 50, y: 300 }];
+            previousPositions = []; // Reset previous positions
+            food = { x: Math.random() * (canvas.width - 20), y: Math.random() * (canvas.height - 20) };
+            obstacles = [];
+            score = 0;
+            frameCount = 0;
+            isGameOver = false;
+            resizeCanvas();
+            velocity = { x: 0, y: 0 }; // Reset velocity
+        }
 
-        if (!isGameOver) {
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            frameCount++;
+
+            if (!isGameOver) {
+                updateSnake();
+                generateObstacles();
+                moveFood();
+                drawSnake();
+                drawFood();
+                drawObstacles();
+                checkCollision();
+                
+                // Check if snake eats the food
+                if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
+                    score++;
+                    // Grow the snake by adding a new segment at the end of the current snake length
+                    const newSegment = { x: snake[snake.length - 1].x, y: snake[snake.length - 1].y };
+                    snake.push(newSegment); // Append a new segment
+
+                    // Move food to a new random position
+                    food.x = Math.random() * (canvas.width - 20);
+                    food.y = Math.random() * (canvas.height - 20);
+                }
+
+                // Check if the snake dodges any obstacle
+                obstacles.forEach(obstacle => {
+                    if (obstacle.x + 20 < snake[0].x && !obstacle.scored) {
+                        score++; // Increment score for dodging
+                        obstacle.scored = true; // Mark obstacle as scored
+                    }
+                });
+
+                ctx.fillStyle = 'black';
+                ctx.font = '20px Arial';
+                ctx.fillText('Score: ' + score, 10, 20);
+            } else {
+                ctx.fillStyle = 'black';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over', 100, canvas.height / 2);
+                ctx.fillText('Score: ' + score, 130, canvas.height / 2 + 40);
+                ctx.fillText('Click or Press Up Arrow to Restart', 30, canvas.height / 2 + 80);
+            }
+
             requestAnimationFrame(gameLoop);
         }
-    }
 
-    // Initial Setup
-    placeFood();
-    placeObstacles();
-    gameLoop();
-</script>
-
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        gameLoop();
+    </script>
 </body>
 </html>
