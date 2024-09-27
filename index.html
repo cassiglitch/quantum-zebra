@@ -170,6 +170,7 @@
             score = 0;
             frameCount = 0;
             isGameOver = false;
+            gravity = 0.5
             resizeCanvas();
         }
 
@@ -190,6 +191,7 @@
                 if (snake[0].x < food.x + 20 && snake[0].x + 20 > food.x && snake[0].y < food.y + 20 && snake[0].y + 20 > food.y) {
                     score++;
                     gravity++;
+                    jumpStrength++;
 
                     // Calculate the new segment's position based on the last direction
                     let newSegment = {
