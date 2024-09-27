@@ -67,7 +67,7 @@
 
         document.addEventListener('click', jump);
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
+            if (event.code === 'ArrowUp') {
                 jump();
             } else if (event.code === 'ArrowLeft') {
                 snake[0].x -= 20; // Move left
